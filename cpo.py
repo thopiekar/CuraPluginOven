@@ -208,7 +208,7 @@ def getSource(location):
             print("- Warning: The given download path is not a empty location. Cleaning it up!")
             shutil.rmtree(args.downloaddir)
         if location.endswith(".git"):
-            ret = os.system("git clone  --single-branch --recurse-submodules {} {}".format(location, args.downloaddir))
+            ret = os.system("git clone {} --single-branch --depth 1 --recurse-submodules {} {}".format(args.gitargs, location, args.downloaddir))
             if not ret:
                 return args.downloaddir
 
@@ -285,6 +285,11 @@ if __name__ == "__main__":
                         default = 2,
                         choices = range(3),
                         help = "Location of the build folder")
+    parser.add_argument("--gitargs", "-ga",
+                        dest="gitargs",
+                        type = str,
+                        default = "",
+                        help = "git arguments")
     args = parser.parse_args()
 
     # Getting the real paths

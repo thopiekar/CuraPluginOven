@@ -1,0 +1,15 @@
+## CPO
+# sources
+source/*
+# downloads
+download/*
+# builds
+build/*
+# built plugin files
+*.curaplugin
+*.umplugin
+
+
+## Eclipse + PyDev
+.project
+.pydevproject

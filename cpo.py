@@ -263,7 +263,7 @@ if __name__ == "__main__":
     parser.add_argument("--variant", "--var", "-v",
                         dest="variant",
                         type = str,
-                        default = "binary+source",
+                        default = "binary",
                         choices = ["binary+source",
                                    "binary",
                                    "source",

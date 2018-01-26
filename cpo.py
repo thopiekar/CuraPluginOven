@@ -24,11 +24,14 @@ python_sources = [".py"]
 python_bytecompiled = [".pyc",
                        ".pyo",
                        ]
+qml_bytecompiled = [".qmlc",
+                    ]
 python_files = python_sources + python_bytecompiled
 
-excluded_extentions = python_bytecompiled
+excluded_extentions = python_bytecompiled + qml_bytecompiled
 
 essential_json_fields = ("name",
+                         "id",
                          "i18n-catalog",
                          "author",
                          "email",
@@ -43,6 +46,7 @@ def checkValidPlugin(path):
 
     # A plugin must contain an __init__.py
     if not os.path.isfile(os.path.join(path, "__init__.py")):
+        print("E Verify: Found no __init__ file")
         return False
     print("* Verify: Found __init__ file")
 
@@ -103,26 +107,25 @@ def compileAllPySources(variant, optimize = -1):
                                        relative_filename)
                 destdir = os.path.split(destdir)[0]
                 os.makedirs(destdir, exist_ok = True)
-                if variant in ("binary+source", "source"):
+                if variant in ("binary+source", "source", "binary"):
                     filename_copied = "{}/{}".format(destdir, filename)
                     shutil.copyfile(fullname,
                                     filename_copied
                                     )
                     print("* Copying: {}".format(relative_filename))
-                    if variant is "binary+source":
+                    if variant in ("binary+source", "binary"):
                         compileall.compile_file(filename_copied,
                                             ddir = relative_filename,
                                             quiet = 2,
                                             optimize = optimize,
                                             )
                         print("* Compiling: {}".format(relative_filename))
-                elif variant is "binary":
-                    py_compile.compile(fullname,
-                                       cfile = "{}/{}.{}".format(destdir, filename_wo_extension, "pyc"),
-                                       doraise = True,
-                                       optimize = optimize,
-                                       )
-                    print("* Compiling: {}".format(relative_filename))
+                    if variant is "binary":
+                        if relative_filename != "__init__.py":
+                            print("* Removing: {}".format(relative_filename))
+                            os.remove(filename_copied)
+                else:
+                    print("E Invalid variant!")
     print("i Python files compiled and optionally copied source(s)!")
 
 def copyOtherFiles():
@@ -155,13 +158,20 @@ def copyOtherFiles():
 def checkForIgnorableFiles(relative_filename):
     checked_entries = []
     for entry in relative_filename.split(os.sep):
+        args.exclude
         if entry.startswith("."): # dot files and directories
             return True
-            break
-        this_dir = os.path.join(args.source, *checked_entries, entry)
-        if entry in ("test","tests") and os.path.isdir(this_dir): # test directories
+        this_path = os.path.join(args.source, *checked_entries, entry)
+        if this_path.startswith(os.path.split(__file__)[0]):
             return True
-            break
+        if this_path.startswith(args.build):
+            return True
+        if entry in ("test","tests") and os.path.isdir(this_path): # test directories
+            return True
+        if os.path.isfile(this_path):
+            for extension in excluded_extentions:
+                if entry.endswith(extension):
+                    return True
         checked_entries.append(entry)
     return False
 
@@ -215,7 +225,7 @@ def getSource(location):
     return None
 
 def buildPackage(metadata, compression = zipfile.ZIP_DEFLATED):
-    plugin_name = metadata["i18n-catalog"]
+    plugin_name = metadata["id"]
     plugin_extension = ["umplugin", "curaplugin"][requiresCura(args.source)]
     plugin_file = "{}-{}.{}".format(plugin_name,
                                     metadata["version"],
@@ -224,9 +234,14 @@ def buildPackage(metadata, compression = zipfile.ZIP_DEFLATED):
     if os.path.isfile(plugin_file):
         os.remove(plugin_file)
 
-    # Cura convention: Plugin inside the zip needs to be in a directory with the same name of the plugin itself.
     zip_object = zipfile.ZipFile(plugin_file, "w",
                                  compression = compression)
+    # Cura convention: Plugin inside the zip needs to be in a directory with the same name of the plugin itself.
+    # Originally taken from Uranium:
+    ## Ensure that the root folder is created correctly. We need to tell zip to not compress the folder!
+    subdirectory = zipfile.ZipInfo(plugin_name + "/")
+    zip_object.writestr(subdirectory, "", compress_type = zipfile.ZIP_STORED) #Writing an empty string creates the directory.
+
     for walked in os.walk(args.build):
         root = walked[0]
         files = walked[2]
@@ -238,12 +253,38 @@ def buildPackage(metadata, compression = zipfile.ZIP_DEFLATED):
                              )
     print("i Package built: {}".format(plugin_file))
 
+def testPackage(metadata):
+    plugin_name = metadata["id"]
+    plugin_extension = ["umplugin", "curaplugin"][requiresCura(args.source)]
+    plugin_file = "{}-{}.{}".format(plugin_name,
+                                    metadata["version"],
+                                    plugin_extension)
+
+    # Checking for the Cura convention!
+    with zipfile.ZipFile(plugin_file, "r") as zip_ref:
+        plugin_id = None
+        for file in zip_ref.infolist():
+            if file.filename.endswith("/"):
+                plugin_id = file.filename.strip("/")
+                break
+        
+        if plugin_id is None:
+            print("E Built package is invalid!")
+            return False
+    print("i Built package is valid!")
+    return True
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", "--src", "-s",
                         dest="source",
                         type = str,
                         default = "source",
+                        help = "Location of the source folder")
+    parser.add_argument("--exclude", "--excl", "-e",
+                        dest="exclude",
+                        type = str,
+                        default = None,
                         help = "Location of the source folder")
     parser.add_argument("--downloaddir", "--dldir", "-dd",
                         dest="downloaddir",
@@ -263,7 +304,7 @@ if __name__ == "__main__":
     parser.add_argument("--variant", "--var", "-v",
                         dest="variant",
                         type = str,
-                        default = "binary",
+                        default = "binary+source",
                         choices = ["binary+source",
                                    "binary",
                                    "source",
@@ -272,7 +313,7 @@ if __name__ == "__main__":
     parser.add_argument("--compression", "--comp", "-c",
                         dest="compression",
                         type = str,
-                        default = "lzma",
+                        default = "zlib",
                         choices = ["none",
                                    "zlib",
                                    "bzip2",
@@ -282,7 +323,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimize", "--opt", "-o",
                         dest="optimize",
                         type = int,
-                        default = 2,
+                        default = 0,
                         choices = range(3),
                         help = "Location of the build folder")
     parser.add_argument("--gitargs", "-ga",
@@ -299,7 +340,7 @@ if __name__ == "__main__":
 
     # Source validation check
     if not checkValidPlugin(args.source):
-        print("--> The provided source can not be built!")
+        print("E The provided source can not be built!")
         sys.exit(1)
 
     # Preparing the compression option
@@ -325,4 +366,6 @@ if __name__ == "__main__":
     compileAllPySources(args.variant, optimize = args.optimize)
     copyOtherFiles()
     # Building the package
-    buildPackage(plugin_json, compression=zipfile.ZIP_DEFLATED)
+    buildPackage(plugin_json, compression=args.compression)
+    # Testing package
+    testPackage(plugin_json)

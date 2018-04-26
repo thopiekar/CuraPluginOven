@@ -58,9 +58,16 @@ def checkValidPlugin(path):
     print("* Verify: Passed syntax verification of plugin definition")
 
     # .. and a plugin must contain an plugin.json!
-    if not os.path.isfile(os.path.join(path, "LICENSE")):
+    result = False
+    for license_file in ("LICENSE",
+                         "LICENSE.txt",):
+        if os.path.isfile(os.path.join(path, license_file)):
+            result = False
+            break
+    if not result:
+        print("! ERROR: Licence file not found!")
         return False
-    print("* Verify: Found Licence file")
+    print("* Verify: Licence file found")
 
     # The JSON also should contain a license definition!
     for keyword in essential_json_fields:

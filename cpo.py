@@ -373,3 +373,5 @@ if __name__ == "__main__":
     buildPackage(plugin_json, compression=args.compression)
     # Testing package
     testPackage(plugin_json)
+    # Clean up build directory
+    removeUpBuildDirectory()

@@ -74,11 +74,15 @@ def checkValidPlugin(path):
 
     return True
 
-def prepareBuildDirectory(build_path):
+def removeUpBuildDirectory(build_path):
     if os.path.isdir(build_path):
         if len(os.listdir(build_path)):
             print("- Warning: The given build path is neither a new location nor empty. Cleaning it up!")
             shutil.rmtree(build_path)
+
+def prepareBuildDirectory(build_path):
+    removeUpBuildDirectory()
+    
     os.makedirs(build_path,
                 exist_ok = True)
 

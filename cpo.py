@@ -289,7 +289,7 @@ if __name__ == "__main__":
                         dest="exclude",
                         type = str,
                         default = None,
-                        help = "Location of the source folder")
+                        help = "Exclude files or directories separated via os.pathsep")
     parser.add_argument("--downloaddir", "--dldir", "-dd",
                         dest="downloaddir",
                         type = str,

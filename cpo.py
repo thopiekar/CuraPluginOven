@@ -105,7 +105,7 @@ def compileAllPySources(variant, optimize = -1):
             relative_filename = os.path.relpath(fullname, args.source)
             if checkForIgnorableFiles(relative_filename):
                 continue
-            filename_wo_extension, extension = os.path.splitext(filename)
+            _, extension = os.path.splitext(filename)
             if extension in python_sources:
                 destdir = os.path.join(args.build,
                                        relative_filename)

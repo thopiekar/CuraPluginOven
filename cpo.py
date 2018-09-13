@@ -227,7 +227,7 @@ class CuraPluginCreator(CuraCreatorCommon):
         for license_file in ("LICENSE",
                              "LICENSE.txt",):
             if os.path.isfile(os.path.join(path, license_file)):
-                result = False
+                result = True
                 break
         if not result:
             print("! ERROR: Licence file not found!")

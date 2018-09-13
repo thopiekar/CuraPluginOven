@@ -325,7 +325,7 @@ if __name__ == "__main__":
     parser.add_argument("--creator", "--cr", "-C",
                         dest="creator",
                         type = str,
-                        default = "package",
+                        default = "plugin",
                         choices = ["package",
                                    "plugin_legacy",
                                    "plugin",

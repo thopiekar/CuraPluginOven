@@ -388,8 +388,17 @@ if __name__ == "__main__":
                         help = "git arguments")
     args = parser.parse_args()
 
+    if args.creator == "package":
+        creator = CuraPackageCreator
+    elif args.creator == "plugin":
+        creator = CuraPluginCreator
+    else:
+        print("Unknown distribution!")
+        sys.exit(0)
+    creator = creator()
+
     # Getting the real paths
-    args.source = getSource(args.source)
+    args.source = creator.getSource(args.source)
     args.source = os.path.realpath(args.source)
     args.build = os.path.realpath(args.build)
 
@@ -405,13 +414,5 @@ if __name__ == "__main__":
     else:
         print("Unknown compression format!")
         sys.exit(1)
-
-    if args.creator == "package":
-        creator = CuraPackageCreator
-    elif args.creator == "plugin":
-        creator = CuraPluginCreator
-    else:
-        print("Unknown distribution!")
-        sys.exit(0)
 
     creator.generateDistribution(args)

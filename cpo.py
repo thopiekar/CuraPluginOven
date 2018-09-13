@@ -40,7 +40,7 @@ essential_json_fields = ("name",
 
 class CuraCreatorCommon():
     "Common methods across all creators"
-    def loadInfoFromJsonFile(source_path):
+    def loadInfoFromJsonFile(self, source_path):
         json_file = open(os.path.join(source_path,
                                       "plugin.json",
                                       )
@@ -49,21 +49,21 @@ class CuraCreatorCommon():
         json_file.close()
         return result
 
-    def removeUpBuildDirectory(build_path):
+    def cleanUpBuildDirectory(self, build_path):
         if os.path.isdir(build_path):
             if len(os.listdir(build_path)):
                 print("- Warning: The given build path is neither a new location nor empty. Cleaning it up!")
                 shutil.rmtree(build_path)
 
-    def prepareBuildDirectory(build_path):
-        removeUpBuildDirectory()
+    def prepareBuildDirectory(self, build_path):
+        self.cleanUpBuildDirectory(build_path)
 
         os.makedirs(build_path,
                     exist_ok = True)
 
         print("i Build directory prepared!")
 
-    def checkForIgnorableFiles(relative_filename):
+    def checkForIgnorableFiles(self, relative_filename):
         checked_entries = []
         for entry in relative_filename.split(os.sep):
             args.exclude
@@ -83,7 +83,7 @@ class CuraCreatorCommon():
             checked_entries.append(entry)
         return False
 
-    def compileAllPySources(variant, optimize = -1):
+    def compileAllPySources(self, variant, optimize = -1):
         # zip_handle is zipfile handle
         for walked in os.walk(args.source):
             root = walked[0]
@@ -91,7 +91,7 @@ class CuraCreatorCommon():
             for filename in filenames:
                 fullname = os.path.join(root, filename)
                 relative_filename = os.path.relpath(fullname, args.source)
-                if checkForIgnorableFiles(relative_filename):
+                if self.checkForIgnorableFiles(relative_filename):
                     continue
                 _, extension = os.path.splitext(filename)
                 if extension in python_sources:
@@ -120,7 +120,7 @@ class CuraCreatorCommon():
                         print("E Invalid variant!")
         print("i Python files compiled and optionally copied source(s)!")
 
-    def copyOtherFiles():
+    def copyOtherFiles(self):
         # zip_handle is zipfile handle
         for walked in os.walk(args.source):
             root = walked[0]
@@ -134,7 +134,7 @@ class CuraCreatorCommon():
                     continue
                 fullname = os.path.join(root, filename)
                 relative_filename = os.path.relpath(fullname, args.source)
-                if checkForIgnorableFiles(relative_filename):
+                if self.checkForIgnorableFiles(relative_filename):
                     continue
                 print("* Copying: {}".format(relative_filename))
 
@@ -147,17 +147,17 @@ class CuraCreatorCommon():
                                 )
         print("i Copied other files!")
 
-    def requiresCura(path):
-        return getFlavour(path) is "cura"
+    def requiresCura(self, path):
+        return self.getFlavour(path) is "cura"
 
-    def isUrlAddress(address):
+    def isUrlAddress(self, address):
         try:
             urlparse(address)
             return True
         except:
             return False
 
-    def getSource(location):
+    def getSource(self, location):
         if os.path.isdir(location):
             return location
 
@@ -183,27 +183,27 @@ class CuraPluginCreator(CuraCreatorCommon):
 
     def generateDistribution(self, args):
         # Source validation check
-        if not checkValidPlugin(args.source):
+        if not self.checkValidPlugin(args.source):
             print("E The provided source is not valid!")
             sys.exit(1)
 
         # Reading the JSON file and checking which flavour of package needs to be built
         plugin_json = self.loadInfoFromJsonFile(args.source)
-        requiresCura(args.source)
+        self.requiresCura(args.source)
 
         # Preparing build..
-        prepareBuildDirectory(args.build)
+        self.prepareBuildDirectory(args.build)
         # Build all files.. Compile and copy them..
-        compileAllPySources(args.variant, optimize = args.optimize)
-        copyOtherFiles()
+        self.compileAllPySources(args.variant, optimize = args.optimize)
+        self.copyOtherFiles()
         # Building the package
-        buildPackage(plugin_json, compression=args.compression)
+        self.buildPackage(plugin_json, compression=args.compression)
         # Testing package
-        testPackage(plugin_json)
+        self.testPackage(plugin_json)
         # Clean up build directory
-        removeUpBuildDirectory()
+        self.cleanUpBuildDirectory(args.build)
 
-    def checkValidPlugin(path):
+    def checkValidPlugin(self, path):
         # A plugin must be a folder
         if not os.path.isdir(path):
             return False
@@ -219,7 +219,7 @@ class CuraPluginCreator(CuraCreatorCommon):
         if not os.path.isfile(os.path.join(path, "plugin.json")):
             return False
         print("* Verify: Found plugin definition")
-        plugin_json = loadPluginJSON(args.source)
+        plugin_json = self.loadInfoFromJsonFile(args.source)
         print("* Verify: Passed syntax verification of plugin definition")
 
         # .. and a plugin must contain an plugin.json!
@@ -246,7 +246,7 @@ class CuraPluginCreator(CuraCreatorCommon):
 
         return True
 
-    def getFlavour(path):
+    def getFlavour(self, path):
         imports_cura = False
         imports_uranium = False
         for walked in os.walk(path):
@@ -270,9 +270,9 @@ class CuraPluginCreator(CuraCreatorCommon):
         else:
             raise ValueError("This is impossible! You need to import Uranium at least!")
 
-    def buildPackage(metadata, compression = zipfile.ZIP_DEFLATED):
+    def buildPackage(self, metadata, compression = zipfile.ZIP_DEFLATED):
         plugin_name = metadata["id"]
-        plugin_extension = ["umplugin", "curaplugin"][requiresCura(args.source)]
+        plugin_extension = ["umplugin", "curaplugin"][self.requiresCura(args.source)]
         plugin_file = "{}-{}.{}".format(plugin_name,
                                         metadata["version"],
                                         plugin_extension)
@@ -299,9 +299,9 @@ class CuraPluginCreator(CuraCreatorCommon):
                                  )
         print("i Package built: {}".format(plugin_file))
 
-    def testPackage(metadata):
+    def testPackage(self, metadata):
         plugin_name = metadata["id"]
-        plugin_extension = ["umplugin", "curaplugin"][requiresCura(args.source)]
+        plugin_extension = ["umplugin", "curaplugin"][self.requiresCura(args.source)]
         plugin_file = "{}-{}.{}".format(plugin_name,
                                         metadata["version"],
                                         plugin_extension)

@@ -30,19 +30,35 @@ python_files = python_sources + python_bytecompiled
 
 excluded_extentions = python_bytecompiled + qml_bytecompiled
 
-essential_json_fields = ("name",
-                         "id",
-                         "i18n-catalog",
-                         "author",
-                         "email",
-                         "version",
-                         "description")
+essential_package_fields = (("package_id",),
+                            ("package_type",),
+                            ("display_name",),
+                            ("description",),
+                            ("package_version",),
+                            ("sdk_version",),
+                            ("website",),
+                            ("author",),
+                            ("author", "author_id"),
+                            ("author", "display_name"),
+                            ("author", "email"),
+                            ("author", "website"),
+                            ("tags",),
+                            )
+
+essential_plugin_fields = ("name",
+                           "id",
+                           "i18n-catalog",
+                           "author",
+                           "email",
+                           "version",
+                           "description",
+                           )
 
 class CuraCreatorCommon():
     "Common methods across all creators"
-    def loadInfoFromJsonFile(self, source_path):
+    def loadInfoFromJsonFile(self, source_path, filename):
         json_file = open(os.path.join(source_path,
-                                      "plugin.json",
+                                      filename,
                                       )
                         )
         result = json.load(json_file)
@@ -175,6 +191,73 @@ class CuraCreatorCommon():
 class CuraPackageCreator(CuraCreatorCommon):
     "Creates package files based on package info (package.json)"
 
+    def generateDistribution(self, args):
+        # Source validation check
+        if not self.checkValidPlugin(args.source):
+            print("E The provided source is not valid!")
+            sys.exit(1)
+
+
+    def checkValidPlugin(self, path):
+        # A plugin must be a folder
+        if not os.path.isdir(path):
+            return False
+        print("* Verify: Found project base")
+
+        # .. and a plugin must contain an plugin.json!
+        result = False
+        for license_file in ("LICENSE",
+                             "LICENSE.txt",):
+            if os.path.isfile(os.path.join(path, license_file)):
+                result = True
+                break
+        if not result:
+            print("! ERROR: Licence file not found!")
+            return False
+        print("* Verify: Licence file found")
+
+        # Checking whether package metadata is parsable
+        metadata = self.loadInfoFromJsonFile(args.source, "package.json")
+        print("* Verify: Passed syntax verification of plugin definition")
+
+        for keywords in essential_package_fields:
+            test_object = metadata
+            for keyword in keywords:
+                if keyword not in test_object.keys():
+                    print("! ERROR: Missing keyword in metadata: {}".format(repr(".".join(keywords))))
+                    return False
+                else:
+                    test_object = test_object[keyword]
+            print("* Verify: Found keyword in metadata: {}".format(repr(".".join(keywords))))
+
+        # Trying to find source base
+        if not metadata["package_type"] == "plugin":
+            print("Unexpected package format: %s".format(repr(metadata["package_type"])))
+        expected_source_bases = (os.path.join(args.source, metadata["package_type"], metadata["package_id"]), # As placed in the final package
+                                 os.path.join(args.source, metadata["package_id"]), # as done at CuraDrive
+                                 os.path.join(args.source, ), # in case the package.json is in the same directory as the sources
+                                 )
+        result = False
+        for expected_source_base in expected_source_bases:
+            # Checking for some general requirements here:
+            # A source base must contain an __init__.py
+            if not os.path.isfile(os.path.join(expected_source_base, "__init__.py")):
+                print("D Verify: Found no __init__ file at {}".format(repr(expected_source_base)))
+                continue
+            print("* Verify: Found __init__ file at {}".format(repr(expected_source_base)))
+
+            print("d Found source base at {}".format(expected_source_base))
+            result = True
+            break
+
+        if not result:
+            print("e Source base not found!")
+            return False
+
+        print("i Verification passed!")
+        return True
+
+
 class CuraPluginCreatorLegacy(CuraCreatorCommon):
     "Creates plugin files based on package info (package.json)"
 
@@ -188,7 +271,7 @@ class CuraPluginCreator(CuraCreatorCommon):
             sys.exit(1)
 
         # Reading the JSON file and checking which flavour of package needs to be built
-        plugin_json = self.loadInfoFromJsonFile(args.source)
+        plugin_json = self.loadInfoFromJsonFile(args.source, "plugin.json")
         self.requiresCura(args.source)
 
         # Preparing build..
@@ -219,7 +302,7 @@ class CuraPluginCreator(CuraCreatorCommon):
         if not os.path.isfile(os.path.join(path, "plugin.json")):
             return False
         print("* Verify: Found plugin definition")
-        plugin_json = self.loadInfoFromJsonFile(args.source)
+        plugin_json = self.loadInfoFromJsonFile(args.source, "plugin.json")
         print("* Verify: Passed syntax verification of plugin definition")
 
         # .. and a plugin must contain an plugin.json!
@@ -325,7 +408,7 @@ if __name__ == "__main__":
     parser.add_argument("--creator", "--cr", "-C",
                         dest="creator",
                         type = str,
-                        default = "plugin",
+                        default = "package",
                         choices = ["package",
                                    "plugin_legacy",
                                    "plugin",

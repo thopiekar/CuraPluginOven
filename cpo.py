@@ -220,6 +220,7 @@ class CuraPackageCreator(CuraCreatorCommon):
         metadata = self.loadInfoFromJsonFile(args.source, "package.json")
         print("* Verify: Passed syntax verification of plugin definition")
 
+        # Checking whether all keywords are present
         for keywords in essential_package_fields:
             test_object = metadata
             for keyword in keywords:
@@ -239,14 +240,15 @@ class CuraPackageCreator(CuraCreatorCommon):
                                  )
         result = False
         for expected_source_base in expected_source_bases:
+            print("i Testing path: {}".format(repr(expected_source_base)))
             # Checking for some general requirements here:
             # A source base must contain an __init__.py
             if not os.path.isfile(os.path.join(expected_source_base, "__init__.py")):
-                print("D Verify: Found no __init__ file at {}".format(repr(expected_source_base)))
+                print("D Verify: Found no __init__ file")
                 continue
-            print("* Verify: Found __init__ file at {}".format(repr(expected_source_base)))
+            print("* Verify: Found __init__ file")
 
-            print("d Found source base at {}".format(expected_source_base))
+            print("d Found source base")
             result = True
             break
 
@@ -254,6 +256,7 @@ class CuraPackageCreator(CuraCreatorCommon):
             print("e Source base not found!")
             return False
 
+        # All checks done
         print("i Verification passed!")
         return True
 

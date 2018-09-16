@@ -191,12 +191,36 @@ class CuraCreatorCommon():
 class CuraPackageCreator(CuraCreatorCommon):
     "Creates package files based on package info (package.json)"
 
+    def __init__(self):
+        self._source_base = None
+
     def generateDistribution(self, args):
         # Source validation check
         if not self.checkValidPlugin(args.source):
             print("E The provided source is not valid!")
             sys.exit(1)
 
+        self.generatePluginMetadata(override = False)
+        if not self.verifyPluginMetadata(args):
+            print("E The plugins metadata is not valid!")
+            sys.exit(1)
+
+    def generatePluginMetadata(self, override = False):
+        if os.path.isfile(os.path.join(self._source_base, "plugin.json")) and not override:
+            print("w Metadata of the plugin already exists. Skipping automated creation!")
+            return
+
+    def verifyPluginMetadata(self, args):
+        plugin_meta = self.loadInfoFromJsonFile(self._source_base, "plugin.json")
+        package_meta = self.loadInfoFromJsonFile(args.source, "package.json")
+
+        # Equality of IDs
+        if not plugin_meta["id"] == package_meta["package_id"]:
+            return False
+        # Equality of the names
+        if not plugin_meta["name"] == package_meta["display_name"]:
+            return False
+        return True
 
     def checkValidPlugin(self, path):
         # A plugin must be a folder
@@ -240,15 +264,15 @@ class CuraPackageCreator(CuraCreatorCommon):
                                  )
         result = False
         for expected_source_base in expected_source_bases:
-            print("i Testing path: {}".format(repr(expected_source_base)))
+            print("* Testing path: {}".format(repr(expected_source_base)))
             # Checking for some general requirements here:
             # A source base must contain an __init__.py
             if not os.path.isfile(os.path.join(expected_source_base, "__init__.py")):
-                print("D Verify: Found no __init__ file")
                 continue
             print("* Verify: Found __init__ file")
 
-            print("d Found source base")
+            print("i Found source base")
+            self._source_base = expected_source_base
             result = True
             break
 

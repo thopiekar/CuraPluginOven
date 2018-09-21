@@ -6,6 +6,7 @@ download/*
 # builds
 build/*
 # built plugin files
+*.curapackage
 *.curaplugin
 *.umplugin
 

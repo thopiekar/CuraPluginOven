@@ -67,12 +67,12 @@ class CuraCreatorCommon():
 
     def cleanUpBuildDirectory(self, build_path):
         if os.path.isdir(build_path):
-            if len(os.listdir(build_path)):
-                print("- Warning: The given build path is neither a new location nor empty. Cleaning it up!")
-                shutil.rmtree(build_path)
+            shutil.rmtree(build_path)
+        print("i Build directory removed!")
 
-    def prepareBuildDirectory(self, build_path):
-        self.cleanUpBuildDirectory(build_path)
+    def prepareBuildDirectory(self, build_path, cleanup_before_creation = True):
+        if cleanup_before_creation:
+            self.cleanUpBuildDirectory(build_path)
 
         os.makedirs(build_path,
                     exist_ok = True)
@@ -86,9 +86,9 @@ class CuraCreatorCommon():
             if entry.startswith("."): # dot files and directories
                 return True
             this_path = os.path.join(args.source, *checked_entries, entry)
-            if this_path.startswith(os.path.split(__file__)[0]):
+            if this_path == os.path.split(__file__)[0]: # Filtering out CPO itself
                 return True
-            if this_path.startswith(args.build):
+            if this_path.startswith(args.build): # Ignore the build dir inside source dir
                 return True
             if entry in ("test","tests") and os.path.isdir(this_path): # test directories
                 return True
@@ -99,19 +99,19 @@ class CuraCreatorCommon():
             checked_entries.append(entry)
         return False
 
-    def compileAllPySources(self, variant, optimize = -1):
+    def compileAllPySources(self, source, build, variant, optimize = -1):
         # zip_handle is zipfile handle
-        for walked in os.walk(args.source):
+        for walked in os.walk(source):
             root = walked[0]
             filenames = walked[2]
             for filename in filenames:
                 fullname = os.path.join(root, filename)
-                relative_filename = os.path.relpath(fullname, args.source)
+                relative_filename = os.path.relpath(fullname, source)
                 if self.checkForIgnorableFiles(relative_filename):
                     continue
                 _, extension = os.path.splitext(filename)
                 if extension in python_sources:
-                    destdir = os.path.join(args.build,
+                    destdir = os.path.join(build,
                                            relative_filename)
                     destdir = os.path.split(destdir)[0]
                     os.makedirs(destdir, exist_ok = True)
@@ -136,27 +136,28 @@ class CuraCreatorCommon():
                         print("E Invalid variant!")
         print("i Python files compiled and optionally copied source(s)!")
 
-    def copyOtherFiles(self):
+    def copyOtherFiles(self, source, build, ignore_dot_files = True):
         # zip_handle is zipfile handle
-        for walked in os.walk(args.source):
+        for walked in os.walk(source):
             root = walked[0]
             filenames = walked[2]
             for filename in filenames:
-                if filename.startswith("."): # dot files
+                if filename.startswith(".") and ignore_dot_files: # dot files
                     continue
                 if filename in system_files: # system files
                     continue
                 if os.path.splitext(filename)[1] in python_files: # python files
                     continue
                 fullname = os.path.join(root, filename)
-                relative_filename = os.path.relpath(fullname, args.source)
+                relative_filename = os.path.relpath(fullname, source)
                 if self.checkForIgnorableFiles(relative_filename):
                     continue
                 print("* Copying: {}".format(relative_filename))
 
-                destdir = os.path.split(os.path.join(args.build,
-                                                     relative_filename)
-                                                     )[0]
+                destdir = os.path.split(os.path.join(build,
+                                                     relative_filename,
+                                                     )
+                                        )[0]
                 os.makedirs(destdir, exist_ok = True)
                 shutil.copyfile(fullname,
                                 os.path.join(destdir, filename)
@@ -196,23 +197,47 @@ class CuraPackageCreator(CuraCreatorCommon):
 
     def generateDistribution(self, args):
         # Source validation check
-        if not self.checkValidPlugin(args.source):
+        if not self.checkValidSource(args.source):
             print("E The provided source is not valid!")
             sys.exit(1)
 
-        self.generatePluginMetadata(override = False)
-        if not self.verifyPluginMetadata(args):
-            print("E The plugins metadata is not valid!")
-            sys.exit(1)
+        # Preparing build..
+        self.prepareBuildDirectory(args.build)
+
+        # Generate (optionally) legacy plugin json
+        #self.generatePluginMetadata(override = False)
+        #if os.path.isfile(os.path.join(self._source_base, "plugin.json")):
+        #    if not self.verifyPluginMetadata(args.source):
+        #        print("E The plugins metadata is not valid!")
+        #        sys.exit(1)
+
+        # Copy package metadata
+        shutil.copyfile(os.path.join(args.source, "package.json"),
+                        os.path.join(args.build, "package.json"),
+                        )
+
+        # Build all files.. Compile and copy them..
+        metadata = self.loadInfoFromJsonFile(args.build, "package.json")
+        _build_base = os.path.join(args.build, "files", metadata["package_type"], metadata["package_id"])
+        print(_build_base)
+        print(self._source_base)
+        self.compileAllPySources(self._source_base, _build_base, args.variant, optimize = args.optimize)
+        self.copyOtherFiles(self._source_base, _build_base)
+
+        # Building the package
+        self.buildPackage(metadata, compression = args.compression)
+
+        # Clean up build directory
+        #self.cleanUpBuildDirectory(args.build)
 
     def generatePluginMetadata(self, override = False):
         if os.path.isfile(os.path.join(self._source_base, "plugin.json")) and not override:
             print("w Metadata of the plugin already exists. Skipping automated creation!")
             return
 
-    def verifyPluginMetadata(self, args):
+    def verifyPluginMetadata(self, source):
         plugin_meta = self.loadInfoFromJsonFile(self._source_base, "plugin.json")
-        package_meta = self.loadInfoFromJsonFile(args.source, "package.json")
+        package_meta = self.loadInfoFromJsonFile(source, "package.json")
 
         # Equality of IDs
         if not plugin_meta["id"] == package_meta["package_id"]:
@@ -220,9 +245,12 @@ class CuraPackageCreator(CuraCreatorCommon):
         # Equality of the names
         if not plugin_meta["name"] == package_meta["display_name"]:
             return False
+        # Equality of the names
+        if not plugin_meta["version"] == package_meta["package_version"]:
+            return False
         return True
 
-    def checkValidPlugin(self, path):
+    def checkValidSource(self, path):
         # A plugin must be a folder
         if not os.path.isdir(path):
             return False
@@ -241,7 +269,7 @@ class CuraPackageCreator(CuraCreatorCommon):
         print("* Verify: Licence file found")
 
         # Checking whether package metadata is parsable
-        metadata = self.loadInfoFromJsonFile(args.source, "package.json")
+        metadata = self.loadInfoFromJsonFile(path, "package.json")
         print("* Verify: Passed syntax verification of plugin definition")
 
         # Checking whether all keywords are present
@@ -284,6 +312,29 @@ class CuraPackageCreator(CuraCreatorCommon):
         print("i Verification passed!")
         return True
 
+    def buildPackage(self, metadata, compression = zipfile.ZIP_DEFLATED):
+        plugin_name = metadata["package_id"]
+        plugin_extension = "curapackage"
+        plugin_file = "{}-{}.{}".format(plugin_name,
+                                        metadata["package_version"],
+                                        plugin_extension)
+        plugin_file = os.path.join(args.destination, plugin_file)
+        if os.path.isfile(plugin_file):
+            os.remove(plugin_file)
+
+        zip_object = zipfile.ZipFile(plugin_file, "w",
+                                     compression = compression)
+        for walked in os.walk(args.build):
+            root = walked[0]
+            files = walked[2]
+            for file in files:
+                filename = os.path.relpath(os.path.join(root, file), args.build)
+                print("* Packaging: {}".format(filename))
+                zip_object.write(os.path.join(args.build, filename),
+                                 os.path.join(filename)
+                                 )
+        print("i Package built: {}".format(plugin_file))
+
 
 class CuraPluginCreatorLegacy(CuraCreatorCommon):
     "Creates plugin files based on package info (package.json)"
@@ -304,10 +355,10 @@ class CuraPluginCreator(CuraCreatorCommon):
         # Preparing build..
         self.prepareBuildDirectory(args.build)
         # Build all files.. Compile and copy them..
-        self.compileAllPySources(args.variant, optimize = args.optimize)
-        self.copyOtherFiles()
+        self.compileAllPySources(args.source, args.build, args.variant, optimize = args.optimize)
+        self.copyOtherFiles(args.source, args.build)
         # Building the package
-        self.buildPackage(plugin_json, compression=args.compression)
+        self.buildPackage(plugin_json, compression = args.compression)
         # Testing package
         self.testPackage(plugin_json)
         # Clean up build directory

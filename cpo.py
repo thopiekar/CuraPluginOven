@@ -474,9 +474,9 @@ class CuraPluginCreator(CuraCreatorCommon):
                     break
 
             if plugin_id is None:
-                print("E Built package is invalid!")
+                print("E Built plugin file is invalid!")
                 return False
-        print("i Built package is valid!")
+        print("i Built plugin file is valid!")
         return True
 
 class CuraMultiCreator(CuraPackageCreator, CuraPluginCreator):

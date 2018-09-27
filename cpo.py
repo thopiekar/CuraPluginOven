@@ -192,6 +192,29 @@ class CuraCreatorCommon():
 class CuraPackageCreator(CuraCreatorCommon):
     "Creates package files based on package info (package.json)"
 
+    CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default ContentType="application/vnd.openxmlformats-package.relationships+xml" Extension="rels" />
+  <Default ContentType="application/x-ultimaker-material-profile" Extension="xml.fdm_material" />
+  <Default ContentType="application/x-ultimaker-material-sig" Extension="xml.fdm_material.sig" />
+  <Default ContentType="application/x-ultimaker-quality-profile" Extension="inst.cfg" />
+  <Default ContentType="application/x-ultimaker-machine-definition" Extension="def.json" />
+  <Default ContentType="text/json" Extension="json" />
+</Types>
+"""
+
+    RELATION_BASE = """<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rel0" Target="/package.json" Type="http://schemas.ultimaker.org/package/2018/relationships/opc_metadata" />
+</Relationships>
+"""
+
+    RELATION_PLUGIN_BASE = """<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rel0" Target="/files/plugins" Type="plugin" />
+</Relationships>
+"""
+
     def __init__(self):
         self._source_base = None
 
@@ -218,7 +241,7 @@ class CuraPackageCreator(CuraCreatorCommon):
 
         # Build all files.. Compile and copy them..
         metadata = self.loadInfoFromJsonFile(args.build, "package.json")
-        _build_base = os.path.join(args.build, "files", metadata["package_type"], metadata["package_id"])
+        _build_base = os.path.join(args.build, "files", "plugins", metadata["package_id"])
         self.compileAllPySources(self._source_base, _build_base, args.variant, optimize = args.optimize)
         self.copyOtherFiles(self._source_base, _build_base)
 
@@ -323,6 +346,14 @@ class CuraPackageCreator(CuraCreatorCommon):
 
         zip_object = zipfile.ZipFile(plugin_file, "w",
                                      compression = compression)
+
+        subdirectory = zipfile.ZipInfo("_/")
+        zip_object.writestr(subdirectory, "", compress_type = zipfile.ZIP_STORED) #Writing an empty string creates the directory.
+
+        zip_object.writestr("_/[Content_Types].xml", self.CONTENT_TYPES)
+        zip_object.writestr("_/_rels/.rels", self.RELATION_BASE)
+        zip_object.writestr("_/_rels/package.json.rels", self.RELATION_PLUGIN_BASE)
+
         for walked in os.walk(build_dir):
             root = walked[0]
             files = walked[2]
@@ -330,7 +361,7 @@ class CuraPackageCreator(CuraCreatorCommon):
                 filename = os.path.relpath(os.path.join(root, file), build_dir)
                 print("d Packaging: {}".format(filename))
                 zip_object.write(os.path.join(build_dir, filename),
-                                 os.path.join(filename)
+                                 os.path.join("_/", filename)
                                  )
         print("i Package built: {}".format(plugin_file))
 

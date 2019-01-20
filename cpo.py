@@ -383,18 +383,6 @@ class PackageCreator(CreatorCommon):
             return False
         print("d Verify: Found project base")
 
-        # .. and a plugin must contain an plugin.json!
-        result = False
-        for license_file in ("LICENSE",
-                             "LICENSE.txt",):
-            if os.path.isfile(os.path.join(path, license_file)):
-                result = True
-                break
-        if not result:
-            print("! ERROR: Licence file not found!")
-            return False
-        print("d Verify: Licence file found")
-
         # Checking whether all keywords are present
         for keywords in package_600_fields:
             test_object = self.package_meta

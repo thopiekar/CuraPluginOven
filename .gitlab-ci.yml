@@ -1,0 +1,12 @@
+all-tests:
+  stage: test
+  tags:
+  - os:ubuntu,
+  - type:shell
+  script:
+  - cd tests && ./build-git.sh
+  - cd tests && ./build-source.sh
+  only:
+    - triggers
+    - branches
+    - tags

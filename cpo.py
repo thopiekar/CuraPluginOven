@@ -622,6 +622,7 @@ class PluginCreator(CreatorCommon):
             filenames = walked[2]
             for filename in filenames:
                 filename = os.path.join(root, filename)
+                print("d Checking imports in file: {}".format(filename))
                 extension = os.path.splitext(filename)[1]
                 if extension in python_sources:
                     source_file = open(filename)

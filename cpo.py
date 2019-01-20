@@ -625,7 +625,7 @@ class PluginCreator(CreatorCommon):
                 print("d Checking imports in file: {}".format(filename))
                 extension = os.path.splitext(filename)[1]
                 if extension in python_sources:
-                    source_file = open(filename)
+                    source_file = open(filename, errors='ignore')
                     for line in source_file.readlines():
                         if "import" in line and "cura." in line:
                             imports_cura = True

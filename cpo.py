@@ -109,7 +109,6 @@ class CreatorCommon():
         else:
             self.compression = compressions[args.compression]
 
-    "Common methods across all creators"
     def loadJsonFile(self, location):
         json_file = open(location)
         result = json.load(json_file)
@@ -319,67 +318,30 @@ class PackageCreator(CreatorCommon):
 
     def __init__(self, args):
         super().__init__(args)
-        self.plugin_location = None
 
         # Load package metadata
         self.loadPackageMeta()
+        self.package_location = self.source_dir
+        self.plugin_location = None
 
     def verify(self):
         # Source validation check
-        if not self.checkValidSource(self.source_dir):
+        if not self.checkValidSource():
+            print("E The provided source is not valid!")
+            return False
+
+        if not self.verifyPluginMetadata():
             print("E The provided source is not valid!")
             return False
 
         return True
 
-    def generateDistribution(self):
-        # Preparing build..
-        self.prepareBuildDirectory(self.build_dir)
+    def checkValidSource(self, directory):
+        if not directory:
+            directory = self.source_dir
 
-        # Generate (optionally) legacy plugin json
-        #self.generatePluginMetadata(override = False)
-        #if os.path.isfile(os.path.join(self.plugin_location, plugin_metadata_filename)):
-        #    if not self.verifyPluginMetadata(self.source_dir):
-        #        print("E The plugins metadata is not valid!")
-        #        sys.exit(1)
-
-        # Build all files.. Compile and copy them..
-        _build_base = os.path.join(self.build_dir, "files", "plugins", self.package_meta["package_id"])
-        self.compileAllPySources(self.plugin_location, _build_base, args.variant, optimize = args.optimize)
-        self.copyOtherFiles(self.plugin_location, _build_base)
-        shutil.copy(self.license_file, _build_base)
-        self.buildPackageMetadata(sort_keywords = True)
-        self.buildPluginMetadata(location = _build_base)
-
-        # Building the package
-        self.buildPackageFile(self.build_dir)
-
-        # Clean up build directory
-        self.cleanUpBuildDirectory(self.build_dir)
-
-    def generatePluginMetadata(self, override = False):
-        if os.path.isfile(os.path.join(self.plugin_location, plugin_metadata_filename)) and not override:
-            print("w Metadata of the plugin already exists. Skipping automated creation!")
-            return
-
-    # TODO: Use it!
-    def verifyPluginMetadata(self):
-        # Equality of IDs
-        if not self.plugin_meta["id"] == self.package_meta["package_id"]:
-            return False
-        # Equality of the names
-        if not self.plugin_meta["name"] == self.package_meta["display_name"]:
-            return False
-        # Equality of the names
-        if not self.plugin_meta["version"] == self.package_meta["package_version"]:
-            return False
-        if not self.package_meta["sdk_version"] == self.package_meta["sdk_version_semver"].split(".")[0]:
-            return False
-        return True
-
-    def checkValidSource(self, path):
         # A plugin must be a folder
-        if not os.path.isdir(path):
+        if not os.path.isdir(directory):
             return False
         print("d Verify: Found project base")
 
@@ -422,7 +384,7 @@ class PackageCreator(CreatorCommon):
         self.loadPluginMeta(self.plugin_location)
 
         result = False
-        license_locations = [path, self.plugin_location]
+        license_locations = [directory, self.plugin_location]
         for license_location in license_locations:
             found_at_location = False
             for license_file in license_filenames:
@@ -443,6 +405,50 @@ class PackageCreator(CreatorCommon):
         # All checks done
         print("i Verification passed!")
         return True
+
+    def verifyPluginMetadata(self):
+        # Equality of IDs
+        if not self.plugin_meta["id"] == self.package_meta["package_id"]:
+            return False
+        # Equality of the names
+        if not self.plugin_meta["name"] == self.package_meta["display_name"]:
+            return False
+        # Equality of the names
+        if not self.plugin_meta["version"] == self.package_meta["package_version"]:
+            return False
+        if not self.package_meta["sdk_version"] == self.package_meta["sdk_version_semver"].split(".")[0]:
+            return False
+        return True
+
+    def generateDistribution(self):
+        # Preparing build..
+        self.prepareBuildDirectory(self.build_dir)
+
+        # Generate (optionally) legacy plugin json
+        #self.generatePluginMetadata(override = False)
+        #if os.path.isfile(os.path.join(self.plugin_location, plugin_metadata_filename)):
+        #    if not self.verifyPluginMetadata(self.source_dir):
+        #        print("E The plugins metadata is not valid!")
+        #        sys.exit(1)
+
+        # Build all files.. Compile and copy them..
+        _build_base = os.path.join(self.build_dir, "files", "plugins", self.package_meta["package_id"])
+        self.compileAllPySources(self.plugin_location, _build_base, args.variant, optimize = args.optimize)
+        self.copyOtherFiles(self.plugin_location, _build_base)
+        shutil.copy(self.license_file, _build_base)
+        self.buildPackageMetadata(sort_keywords = True)
+        self.buildPluginMetadata(location = _build_base)
+
+        # Building the package
+        self.buildPackageFile(self.build_dir)
+
+        # Clean up build directory
+        self.cleanUpBuildDirectory(self.build_dir)
+
+    def generatePluginMetadata(self, override = False):
+        if os.path.isfile(os.path.join(self.plugin_location, plugin_metadata_filename)) and not override:
+            print("w Metadata of the plugin already exists. Skipping automated creation!")
+            return
 
     @property
     def buildFilename(self):

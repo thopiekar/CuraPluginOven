@@ -94,7 +94,7 @@ def getSource(location):
 class CreatorCommon():
     def __init__(self, args):
         self.__args = args
-        
+
         # Getting the real paths
         self.source_dir = os.path.realpath(self.__args.source)
         self.build_dir = os.path.realpath(args.build)
@@ -108,7 +108,7 @@ class CreatorCommon():
             print("Unknown compression format!")
         else:
             self.compression = compressions[args.compression]
-        
+
     "Common methods across all creators"
     def loadJsonFile(self, location):
         json_file = open(location)
@@ -254,15 +254,15 @@ class CreatorCommon():
             location = self.build_dir
         if os.path.isdir(location):
             location = os.path.join(location, plugin_metadata_filename)
-        
+
         metadata = self.plugin_meta.copy()
         if api:
             metadata["api"] = self.supported_api
-        
+
         # Filtering out some custom keywords
         if "minimum_api" in metadata.keys():
             del metadata["minimum_api"]
-        
+
         with open(location, "w") as metadata_file:
             metadata_file.write(json.dumps(metadata,
                                            sort_keys = sort_keywords,
@@ -276,11 +276,11 @@ class CreatorCommon():
         if os.path.isdir(location):
             location = os.path.join(location, package_metadata_filename)
         metadata = self.package_meta.copy()
-        
+
         # Filtering out some old keywords
         if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:
             del metadata["tags"]
-        
+
         with open(location, "w") as metadata_file:
             metadata_file.write(json.dumps(metadata,
                                            sort_keys = sort_keywords,
@@ -320,7 +320,7 @@ class PackageCreator(CreatorCommon):
     def __init__(self, args):
         super().__init__(args)
         self.plugin_location = None
-        
+
         # Load package metadata
         self.loadPackageMeta()
 
@@ -329,7 +329,7 @@ class PackageCreator(CreatorCommon):
         if not self.checkValidSource(self.source_dir):
             print("E The provided source is not valid!")
             return False
-        
+
         return True
 
     def generateDistribution(self):
@@ -430,7 +430,7 @@ class PackageCreator(CreatorCommon):
         if not result:
             print("e Plugin sources not found!")
             return False
-        
+
         self.loadPluginMeta(self.plugin_location)
 
         result = False
@@ -506,7 +506,7 @@ class PluginCreator(CreatorCommon):
     def __init__(self, args):
         super().__init__(args)
         self.license_file = None
-        
+
         # (optionally) Load package metadata
         self.package_meta = None
         self.package_location = None
@@ -520,15 +520,15 @@ class PluginCreator(CreatorCommon):
             guessed_plugin_directory_in_package_source = os.path.join(self.source_dir, self.package_meta["package_id"])
             if self.checkValidSource(guessed_plugin_directory_in_package_source):
                 self.source_dir = guessed_plugin_directory_in_package_source
-        
+
         # Double-check..
         if not self.checkValidSource():
             print("E The provided source is not valid!")
             return False
-        
+
         # Test, whether we can determine the plugin's file extension
         self.buildFilename
-        
+
         return True
 
     def generateDistribution(self):
@@ -549,7 +549,7 @@ class PluginCreator(CreatorCommon):
     def checkValidSource(self, directory = None):
         if not directory:
             directory = self.source_dir
-        
+
         # A plugin must be a folder
         if not os.path.isdir(directory):
             print("E Verify: Source location is not a directory!")
@@ -656,7 +656,7 @@ class PluginCreator(CreatorCommon):
 
         zip_object = zipfile.ZipFile(plugin_file, "w",
                                      compression = self.compression)
-        
+
         # Cura convention: Plugin inside the zip needs to be in a directory with the same name of the plugin itself.
         # Originally taken from Uranium:
         ## Ensure that the root folder is created correctly. We need to tell zip to not compress the folder!
@@ -688,7 +688,7 @@ class PluginCreator(CreatorCommon):
             if not plugin_id == self.plugin_meta["id"]:
                 print("E Plugin name shall be {} and not {}!".format(repr(self.plugin_meta["id"]), repr(plugin_id)))
                 return False
-        
+
         # Checking whether license is present
         with zipfile.ZipFile(plugin_file, "r") as zip_ref:
             license_file_found = False
@@ -700,14 +700,14 @@ class PluginCreator(CreatorCommon):
             if not license_file_found:
                 print("E License file not found!")
                 return False
-        
+
         # Checking whether metadata is present
         with zipfile.ZipFile(plugin_file, "r") as zip_ref:
             metadata_path = os.path.join(plugin_id, plugin_metadata_filename)
             if not metadata_path in [entry.filename for entry in zip_ref.infolist()]:
                 print("E Metadata file not found!")
                 return False
-        
+
         print("i Built plugin file is valid!")
         return True
 
@@ -799,7 +799,7 @@ if __name__ == "__main__":
         else:
             print("Unsupported creator selected!")
             exit(1)
-    
+
     args.source = getSource(args.source)
     for target in targets:
         for creator in creators:

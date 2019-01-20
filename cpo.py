@@ -336,7 +336,7 @@ class PackageCreator(CreatorCommon):
 
         return True
 
-    def checkValidSource(self, directory):
+    def checkValidSource(self, directory = None):
         if not directory:
             directory = self.source_dir
 

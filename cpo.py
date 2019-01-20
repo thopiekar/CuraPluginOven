@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Thomas Karl Pietrowski
+# Copyright (c) 2019 Thomas Karl Pietrowski
 
 import atexit
 import argparse

@@ -357,8 +357,6 @@ class PackageCreator(CreatorCommon):
             print("d Verify: Found keyword in metadata: {}".format(repr(".".join(keywords))))
 
         # Trying to find source base
-        if not self.package_meta["package_type"] == "plugin":
-            print("Unexpected package format: %s".format(repr(self.package_meta["package_type"])))
         expected_plugin_locations = (os.path.join(self.source_dir, self.package_meta["package_type"], self.package_meta["package_id"]), # As placed in the final package
                                  os.path.join(self.source_dir, self.package_meta["package_id"]), # as done at CuraDrive
                                  os.path.join(self.source_dir, ), # in case the package.json is in the same directory as the sources
@@ -417,6 +415,9 @@ class PackageCreator(CreatorCommon):
         if not self.plugin_meta["version"] == self.package_meta["package_version"]:
             return False
         if not self.package_meta["sdk_version"] == self.package_meta["sdk_version_semver"].split(".")[0]:
+            return False
+        if not self.package_meta["package_type"] == "plugin":
+            print("Unexpected package format: {}".format(repr(self.package_meta["package_type"])))
             return False
         return True
 

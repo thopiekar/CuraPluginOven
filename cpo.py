@@ -771,7 +771,7 @@ if __name__ == "__main__":
     parser.add_argument("--compression", "--comp", "-c",
                         dest="compression",
                         type = str,
-                        default = "none",
+                        default = "zlib",
                         choices = ["none",
                                    "zlib",
                                    "bzip2",

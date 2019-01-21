@@ -407,14 +407,18 @@ class PackageCreator(CreatorCommon):
     def verifyPluginMetadata(self):
         # Equality of IDs
         if not self.plugin_meta["id"] == self.package_meta["package_id"]:
+            print("E Plugin ID is not the same as package ID!")
             return False
         # Equality of the names
         if not self.plugin_meta["name"] == self.package_meta["display_name"]:
+            print("E Plugin name is not the same as display name!")
             return False
         # Equality of the names
         if not self.plugin_meta["version"] == self.package_meta["package_version"]:
+            print("E Plugin version is not the same as package version")
             return False
-        if not self.package_meta["sdk_version"] == self.package_meta["sdk_version_semver"].split(".")[0]:
+        if not self.package_meta["sdk_version"] == int(self.package_meta["sdk_version_semver"].split(".")[0]):
+            print("E SDK version is not the same as SDK version semver[0]!")
             return False
         if not self.package_meta["package_type"] == "plugin":
             print("Unexpected package format: {}".format(repr(self.package_meta["package_type"])))

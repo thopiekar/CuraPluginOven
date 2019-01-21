@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 from urllib.parse import urlparse
+from stat import ST_MODE
 
 # Building the package
 import compileall
@@ -200,6 +201,7 @@ class CreatorCommon():
                         shutil.copyfile(fullname,
                                         filename_copied
                                         )
+                        os.chmod(filename_copied, 0o600)
                         print("d Copying: {}".format(relative_filename))
                         if variant in ("binary+source", "binary"):
                             compileall.compile_file(filename_copied,
@@ -243,9 +245,11 @@ class CreatorCommon():
                                                      )
                                         )[0]
                 os.makedirs(destdir, exist_ok = True)
+                filename_copied = os.path.join(destdir, filename)
                 shutil.copyfile(fullname,
-                                os.path.join(destdir, filename)
+                                filename_copied
                                 )
+                os.chmod(filename_copied, 0o600)
         print("i Copied other files!")
 
     def buildPluginMetadata(self, location = None, sort_keywords = False, api = None):

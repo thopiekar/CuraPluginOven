@@ -207,7 +207,7 @@ class CreatorCommon():
                                                 quiet = 2,
                                                 optimize = optimize,
                                                 )
-                            print("d Compiling: {}".format(relative_filename))
+                            print("d Compiled: {}".format(relative_filename))
                         if variant is "binary":
                             if relative_filename != "__init__.py":
                                 print("d Removing: {}".format(relative_filename))

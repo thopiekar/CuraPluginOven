@@ -472,11 +472,11 @@ class PackageCreator(CreatorCommon):
         return plugin_file
 
     def buildPackageFile(self, build_dir):
-        plugin_file = self.buildFilename
-        if os.path.isfile(plugin_file):
-            os.remove(plugin_file)
+        archive_file = self.buildFilename
+        if os.path.isfile(archive_file):
+            os.remove(archive_file)
 
-        zip_object = zipfile.ZipFile(plugin_file, "w",
+        zip_object = zipfile.ZipFile(archive_file, "w",
                                      compression = self.compression)
 
         #SDK6: subdirectory = zipfile.ZipInfo("_/")
@@ -496,11 +496,22 @@ class PackageCreator(CreatorCommon):
             for file in files:
                 filename = os.path.relpath(os.path.join(root, file), build_dir)
                 print("d Packaging: {}".format(filename))
-                zip_object.write(os.path.join(build_dir, filename),
-                                 #SDK6: os.path.join("_/", filename)
-                                 filename
-                                 )
-        print("i Package built: {}".format(plugin_file))
+                filename_build = os.path.join(build_dir, filename)
+                fzipinfo = zipfile.ZipInfo.from_file(filename_build,
+                                                     filename)
+                fzipinfo.external_attr = os.stat(filename_build)[ST_MODE] << 16
+                fopen = open(filename_build, "rb")
+                zip_object.writestr(fzipinfo,
+                                    fopen.read(),
+                                    compress_type = self.compression)
+                #zip_object.write(os.path.join(build_dir, filename),
+                #                 #SDK6: os.path.join("_/", filename)
+                #                 filename
+                #                 )
+                fopen.close()
+
+        zip_object.close()
+        print("i Package built: {}".format(archive_file))
 
 
 class PluginCreator(CreatorCommon):

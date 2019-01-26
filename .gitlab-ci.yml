@@ -1,5 +1,6 @@
 stages:
   - package-6.0.0
+  - plugin-5
   - source
 
 variables:
@@ -33,6 +34,35 @@ package-6.0.0-source:
   - cd tests
   - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$SDK600 --source=./source
+  only:
+    - triggers
+    - branches
+    - tags
+
+plugin-5-git:
+  stage: plugin-5
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - python3 ../cpo.py --create=$API5 --source=$URL
+  only:
+    - triggers
+    - branches
+    - tags
+
+plugin-5-source:
+  stage: plugin-5
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - git clone $URL ./source --recurse-submodules
+  - python3 ../cpo.py --create=$API5 --source=./source
   only:
     - triggers
     - branches

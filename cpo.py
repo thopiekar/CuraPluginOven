@@ -408,7 +408,7 @@ class PackageCreator(CreatorCommon):
             print("e Plugin sources not found!")
             return False
 
-        self.findLicenseFile()
+        self.findLicenseFile(directory)
 
         # Plugin data
         self.loadPluginMeta(self.plugin_location)
@@ -425,7 +425,7 @@ class PackageCreator(CreatorCommon):
 
         return True
 
-    def findLicenseFile(self):
+    def findLicenseFile(self, directory):
         result = False
         license_locations = [self.package_location, self.plugin_location]
         if directory not in license_locations:

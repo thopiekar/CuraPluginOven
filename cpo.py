@@ -801,13 +801,13 @@ class Plugin5Creator(PluginCreator):
 
 class PluginSource4Creator(Plugin4Creator):
     def __init__(self, args):
-        super().__init__()
+        super().__init__(args)
         args.compression = "zlib"
         args.variant = "source"
 
 class PluginSource5Creator(Plugin5Creator):
     def __init__(self, args):
-        super().__init__()
+        super().__init__(args)
         args.compression = "zlib"
         args.variant = "source"
 

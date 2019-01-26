@@ -817,6 +817,7 @@ class PluginSourceCreator(PluginSource5Creator):
     supported_formats = ["source"]
 
     def __init__(self, args):
+        super().__init__()
         args.compression = "zlib"
         args.variant = "source"
 

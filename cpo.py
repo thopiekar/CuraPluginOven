@@ -546,18 +546,21 @@ class PackageCreator(CreatorCommon):
                 filename = os.path.relpath(os.path.join(root, file), build_dir)
                 print("d Packaging: {}".format(filename))
                 filename_build = os.path.join(build_dir, filename)
-                fzipinfo = zipfile.ZipInfo.from_file(filename_build,
-                                                     filename)
-                fzipinfo.external_attr = os.stat(filename_build)[ST_MODE] << 16
-                fopen = open(filename_build, "rb")
-                zip_object.writestr(fzipinfo,
-                                    fopen.read(),
-                                    compress_type = self.compression)
-                #zip_object.write(os.path.join(build_dir, filename),
-                #                 #SDK6: os.path.join("_/", filename)
-                #                 filename
-                #                 )
-                fopen.close()
+
+                if "from_file" in dir(zipfile.ZipInfo):
+                    fzipinfo = zipfile.ZipInfo.from_file(filename_build,
+                                                         filename)
+                    fzipinfo.external_attr = os.stat(filename_build)[ST_MODE] << 16
+                    fopen = open(filename_build, "rb")
+                    zip_object.writestr(fzipinfo,
+                                        fopen.read(),
+                                        compress_type = self.compression)
+                    fopen.close()
+                else:
+                    zip_object.write(filename_build,
+                                     filename
+                                     )
+
 
         zip_object.close()
         print("i Package built: {}".format(archive_file))

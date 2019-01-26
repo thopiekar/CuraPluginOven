@@ -809,9 +809,10 @@ class PluginSource5Creator(Plugin5Creator):
         args.compression = "zlib"
         args.variant = "source"
 
-class PluginSource600Creator(Source5Creator):
+class PluginSourceCreator(PluginSource5Creator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
-    target_sdk = (6, 0, 0)
+    target_sdk = None
+    supported_formats = ["source"]
 
     def __init__(self, args):
         args.compression = "zlib"
@@ -819,10 +820,15 @@ class PluginSource600Creator(Source5Creator):
 
     def checkValidSource(self):
         super().checkValidSource()
-        # Checking whether the targetted SDK version is supported.
-        PackageCreator.checkValidPluginMetadata(self)
+        if self.target_sdk:
+            # Checking whether the targetted SDK version is supported.
+            PackageCreator.checkValidPluginMetadata(self)
 
-creators = (PackageCreator, Plugin5Creator, Plugin4Creator)
+class PluginSource600Creator(Source5Creator):
+    "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
+    target_sdk = (6, 0, 0)
+
+creators = (PackageCreator, Plugin5Creator, Plugin4Creator, PluginSourceCreator)
 default_format = creators[0].supported_formats[0]
 supported_formats = []
 for creator in creators:

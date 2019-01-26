@@ -420,7 +420,7 @@ class PackageCreator(CreatorCommon):
 
     def checkValidPluginMetadata(self):
         # Checking whether target SDK version is within the list of supported SDKs
-        if not ".".join([str(x) for enum in self.target_sdk]) in self.plugin_meta["supported_sdk_versions"]:
+        if not ".".join([str(enum) for enum in self.target_sdk]) in self.plugin_meta["supported_sdk_versions"]:
             return False
 
         return True

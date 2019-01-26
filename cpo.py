@@ -824,7 +824,7 @@ class PluginSourceCreator(PluginSource5Creator):
             # Checking whether the targetted SDK version is supported.
             PackageCreator.checkValidPluginMetadata(self)
 
-class PluginSource600Creator(Source5Creator):
+class PluginSource600Creator(PluginSourceCreator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
     target_sdk = (6, 0, 0)
 

@@ -490,8 +490,7 @@ class PackageCreator(CreatorCommon):
         self.buildPackageFile(self.build_dir)
 
     def test(self):
-        # Testing package
-        self.testPackage()
+        pass
 
     def clean(self):
         # Clean up build directory

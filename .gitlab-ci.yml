@@ -1,11 +1,13 @@
 stages:
   - package-6.0.0
+  - source
 
 variables:
-    SOURCE: "https://thopiekar.eu:5443/cura-cad-integration/CuraBlenderPlugin.git"
+    URL: "https://thopiekar.eu:5443/cura-cad-integration/CuraBlenderPlugin.git"
     SDK600: "package6"
     API5: "plugin5"
     API4: "plugin4"
+    SOURCE: "source"
 
 package-6.0.0-git:
   stage: package-6.0.0
@@ -15,7 +17,7 @@ package-6.0.0-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$SDK600 --source=$SOURCE
+  - python3 ../cpo.py --create=$SDK600 --source=$URL
   only:
     - triggers
     - branches
@@ -29,8 +31,37 @@ package-6.0.0-source:
   - type:shell
   script:
   - cd tests
-  - git clone $SOURCE ./source --recurse-submodules
+  - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$SDK600 --source=./source
+  only:
+    - triggers
+    - branches
+    - tags
+
+source-git:
+  stage: package-6.0.0
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - python3 ../cpo.py --create=$SOURCE --source=$URL
+  only:
+    - triggers
+    - branches
+    - tags
+
+source-source:
+  stage: package-6.0.0
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - git clone $URL ./source --recurse-submodules
+  - python3 ../cpo.py --create=$SOURCE --source=./source
   only:
     - triggers
     - branches

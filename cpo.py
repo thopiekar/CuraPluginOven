@@ -580,9 +580,6 @@ class PluginCreator(CreatorCommon):
             self.package_location = self.source_dir
 
     def verify(self):
-        if not super().verify():
-            return False
-
         # We might get pointed to an package source directory...
         if not self.checkValidSource() and self.package_meta:
             guessed_plugin_directory_in_package_source = os.path.join(self.source_dir, self.package_meta["package_id"])
@@ -592,6 +589,9 @@ class PluginCreator(CreatorCommon):
         # Double-check..
         if not self.checkValidSource():
             print("e The provided source is not valid!")
+            return False
+
+        if not super().verify():
             return False
 
         return True

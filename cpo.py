@@ -821,8 +821,8 @@ class PluginSourceCreator(PluginSource5Creator):
         args.compression = "zlib"
         args.variant = "source"
 
-    def checkValidSource(self):
-        super().checkValidSource()
+    def checkValidSource(self, directory = None):
+        super().checkValidSource(directory)
         if self.target_sdk:
             # Checking whether the targetted SDK version is supported.
             PackageCreator.checkValidPluginMetadata(self)

@@ -584,10 +584,14 @@ class PluginCreator(CreatorCommon):
 
     def verify(self):
         # We might got pointed to an package source directory...
-        if not self.checkValidSource() and self.package_meta:
-            guessed_plugin_directory_in_package_source = os.path.join(self.source_dir, self.package_meta["package_id"])
-            if self.checkValidSource(guessed_plugin_directory_in_package_source):
-                self.plugin_location = guessed_plugin_directory_in_package_source
+        if not self.checkValidSource():
+            if self.package_meta:
+                guessed_plugin_directory_in_package_source = os.path.join(self.source_dir, self.package_meta["package_id"])
+                if self.checkValidSource(guessed_plugin_directory_in_package_source):
+                    self.plugin_location = guessed_plugin_directory_in_package_source
+            else:
+                print("e Could not suggest an alternative plugin source location without any package metadata!")
+                return False
 
         # Double-check..
         if not self.checkValidSource(self.plugin_location):
@@ -806,11 +810,14 @@ class PluginSourceCreator(PluginSource5Creator):
         super().__init__(args)
 
     def checkValidSource(self, directory = None):
-        super().checkValidSource(directory)
+        if not super().checkValidSource(directory):
+            return False
+
         if self.target_sdk:
             # Checking whether the targetted SDK version is supported.
             if not PackageCreator.checkValidPluginMetadata(self):
                 return False
+
         return True
 
 class PluginSource600Creator(PluginSourceCreator):

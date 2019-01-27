@@ -65,6 +65,10 @@ metadata_filenames = (package_metadata_filename,
 
 license_filenames = ("LICENSE",
                      "LICENSE.txt",)
+# all in lowercase
+test_directories = ("test",
+                    "tests",
+                    )
 
 def isUrlAddress(address):
     try:
@@ -215,18 +219,19 @@ class CreatorCommon():
 
         print("i Build directory prepared!")
 
-    def checkForIgnorableFiles(self, relative_filename):
+    def checkForIgnorableFiles(self, base_path, relative_filename):
+        print("d Checking whether file can be ignored: {}".format(relative_filename))
         checked_entries = []
         for entry in relative_filename.split(os.sep):
-            args.exclude
+            # TODO: Implement args.exclude here
             if entry.startswith("."): # dot files and directories
                 return True
-            this_path = os.path.join(self.source_dir, *checked_entries, entry)
+            this_path = os.path.join(base_path, *checked_entries, entry)
             if this_path == os.path.split(__file__)[0]: # Filtering out CPO itself
                 return True
             if this_path.startswith(self.build_dir): # Ignore the build dir inside source dir
                 return True
-            if entry in ("test","tests") and os.path.isdir(this_path): # test directories
+            if entry.lower() in test_directories and os.path.isdir(this_path): # test directories
                 return True
             if os.path.isfile(this_path):
                 for extension in excluded_extentions:
@@ -237,13 +242,12 @@ class CreatorCommon():
 
     def compileAllPySources(self, source, build, variant, optimize = -1):
         # zip_handle is zipfile handle
-        for walked in os.walk(source):
+        for root, dirs, filenames in os.walk(source):
             root = walked[0]
-            filenames = walked[2]
             for filename in filenames:
                 fullname = os.path.join(root, filename)
                 relative_filename = os.path.relpath(fullname, source)
-                if self.checkForIgnorableFiles(relative_filename):
+                if self.checkForIgnorableFiles(source, relative_filename):
                     continue
                 _, extension = os.path.splitext(filename)
                 if extension in python_sources:
@@ -275,9 +279,7 @@ class CreatorCommon():
 
     def copyOtherFiles(self, source, build, ignore_dot_files = True):
         # zip_handle is zipfile handle
-        for walked in os.walk(source):
-            root = walked[0]
-            filenames = walked[2]
+        for root, dirs, filenames in os.walk(source):
             for filename in filenames:
                 if filename.startswith(".") and ignore_dot_files: # dot files
                     continue
@@ -291,7 +293,7 @@ class CreatorCommon():
                     continue
                 fullname = os.path.join(root, filename)
                 relative_filename = os.path.relpath(fullname, source)
-                if self.checkForIgnorableFiles(relative_filename):
+                if self.checkForIgnorableFiles(source, relative_filename):
                     continue
                 print("d Copying: {}".format(relative_filename))
 

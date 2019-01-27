@@ -30,7 +30,8 @@ qml_bytecompiled = [".qmlc",
                     ]
 python_files = python_sources + python_bytecompiled
 
-excluded_extentions = python_bytecompiled + qml_bytecompiled
+excluded_extentions = [".chm", # Windows Compressed HTML Help
+                       ] + python_bytecompiled + qml_bytecompiled
 
 essential_package_fields = (("package_id",),
                             ("package_type",),

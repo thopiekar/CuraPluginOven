@@ -6,6 +6,7 @@ stages:
 
 variables:
     URL: "https://thopiekar.eu:5443/cura-cad-integration/CuraBlenderPlugin.git"
+    TESTFILE: "test.file"
     SDK600: "package6"
     API5: "plugin5"
     API4: "plugin4"
@@ -20,7 +21,8 @@ package-6.0.0-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$SDK600 --source=$URL
+  - python3 ../cpo.py --create=$SDK600 --source=$URL --result=$TESTFILE
+  - [[ -f $TESTFILE ]] || exit 1
   only:
     - triggers
     - branches

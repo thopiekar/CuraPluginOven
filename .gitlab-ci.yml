@@ -39,6 +39,7 @@ package-6.0.0-source:
   - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$SDK600 --source=./source
   - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -53,6 +54,7 @@ plugin-5-git:
   script:
   - cd tests
   - python3 ../cpo.py --create=$API5 --source=$URL
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -69,6 +71,7 @@ plugin-5-source:
   - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$API5 --source=./source
   - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -83,6 +86,7 @@ source-git:
   script:
   - cd tests
   - python3 ../cpo.py --create=$SOURCE --source=$URL
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -99,6 +103,7 @@ source-source:
   - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$SOURCE --source=./source
   - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -113,6 +118,7 @@ all-git:
   script:
   - cd tests
   - python3 ../cpo.py --create=$ALL --source=$URL
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
@@ -129,6 +135,7 @@ all-source:
   - git clone $URL ./source --recurse-submodules
   - python3 ../cpo.py --create=$ALL --source=./source
   - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches

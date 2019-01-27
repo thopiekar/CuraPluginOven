@@ -93,6 +93,8 @@ def getSource(location):
     return None
 
 class CreatorCommon():
+    default_result_extension = ""
+
     def __init__(self, args):
         self.__args = args
 
@@ -101,6 +103,7 @@ class CreatorCommon():
         self.build_dir = os.path.realpath(args.build)
         self.result_dir = args.destination
         self._result_name = args.result
+        self.result_extension = None
 
         compressions = {"none": zipfile.ZIP_STORED,
                         "zlib": zipfile.ZIP_DEFLATED,
@@ -114,10 +117,6 @@ class CreatorCommon():
 
     @property
     def result_name(self):
-        raise ValueError("result_name not implemented!")
-
-    @property
-    def result_extension(self):
         raise ValueError("result_name not implemented!")
 
     def verify(self):
@@ -352,6 +351,7 @@ class PackageCreator(CreatorCommon):
 
     supported_formats = ["package6"]
     target_sdk = (6, 0, 0)
+    default_result_extension = "curapackage"
 
     CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -380,7 +380,6 @@ class PackageCreator(CreatorCommon):
         super().__init__(args)
         self.package_location = self.source_dir
         self.plugin_location = None
-        self.result_extension = "curapackage"
 
         # Load package metadata
         self.loadPackageMeta()
@@ -520,11 +519,16 @@ class PackageCreator(CreatorCommon):
         if self._result_name:
             return self._result_name
 
+        if self.result_extension:
+            result_extension = self.result_extension
+        else:
+            result_extension = self.default_result_extension
+
         sdk_tag = "sdk-" + "".join([str(x) for x in self.target_sdk])
         plugin_file = "{}-{}.{}.{}".format(self.plugin_meta["id"],
                                            self.plugin_meta["version"],
                                            sdk_tag,
-                                           self.result_extension)
+                                           result_extension)
         plugin_file = os.path.join(self.result_dir, plugin_file)
         return plugin_file
 
@@ -569,6 +573,8 @@ class PackageCreator(CreatorCommon):
 
 class PluginCreator(CreatorCommon):
     "Creates plugin files based on plugin info (plugin.json)"
+    # It is either or: ["umplugin", "curaplugin"] - using None here to provocate errors with os.path
+    default_result_extension = None
 
     def __init__(self, args):
         super().__init__(args)
@@ -703,18 +709,19 @@ class PluginCreator(CreatorCommon):
             raise ValueError("This is impossible! You need to import Uranium at least!")
 
     @property
-    def result_extension(self):
-        return ["umplugin", "curaplugin"][self.checkSourceImports(self.plugin_location) is "cura"]
-
-    @property
     def result_name(self):
         if self._result_name:
             return self._result_name
 
+        if self.result_extension:
+            result_extension = self.result_extension
+        else:
+            result_extension = ["umplugin", "curaplugin"][self.checkSourceImports(self.plugin_location) is "cura"]
+
         plugin_file = "{}-{}.{}.{}".format(self.plugin_meta["id"],
                                            self.plugin_meta["version"],
                                            "api-{}".format(self.target_api),
-                                           self.result_extension)
+                                           result_extension)
         plugin_file = os.path.join(self.result_dir, plugin_file)
         return plugin_file
 
@@ -795,6 +802,8 @@ class PluginSource4Creator(Plugin4Creator):
         self.variant = "source"
 
 class PluginSource5Creator(Plugin5Creator):
+    default_result_extension = "zip"
+
     def __init__(self, args):
         super().__init__(args)
         # The following values are known to work well with Ultimaker's contribut portal

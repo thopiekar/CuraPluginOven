@@ -607,6 +607,7 @@ class PluginCreator(CreatorCommon):
         # Build all files.. Compile and copy them..
         self.compileAllPySources(self.plugin_location, self.build_dir, args.variant, optimize = args.optimize)
         self.copyOtherFiles(self.plugin_location, self.build_dir)
+        print("d Installing license file")
         shutil.copy(self.license_file, self.build_dir)
         self.buildPluginMetadata(api = self.target_api)
 

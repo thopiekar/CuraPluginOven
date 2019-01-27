@@ -22,7 +22,7 @@ package-6.0.0-git:
   script:
   - cd tests
   - python3 ../cpo.py --create=$SDK600 --source=$URL --result=$TESTFILE
-  - if [[ -f $TESTFILE ]] ; then exit 1 ; fi
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches

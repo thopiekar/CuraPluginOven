@@ -118,7 +118,13 @@ class CreatorCommon():
 
     def verify(self):
         # Test, whether we can determine the plugin's file extension
-        self.result_name
+        try:
+            self.result_name
+        except Exception:
+            print("E Raised error, when trying to call self.result_name")
+            return False
+
+        return True
 
     def prepare(self):
         raise ValueError("prepare not implemented!")

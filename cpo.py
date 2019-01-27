@@ -178,25 +178,23 @@ class CreatorCommon():
         return self.plugin_meta
 
     def findLicenseFile(self, directory):
-        result = False
+        license_file = None
         license_locations = [self.package_location, self.plugin_location]
         if directory not in license_locations:
             license_locations.append(directory)
         for license_location in license_locations:
-            found_at_location = False
             for license_file in license_filenames:
-                license_file = os.path.join(license_location, license_file)
+                _license_file = os.path.join(license_location, license_file)
                 if os.path.isfile(license_file):
-                    found_at_location = True
+                    license_file = _license_file
                     break
-            if found_at_location:
-                result = True
+            if license_file:
                 break
-        if not result:
+        if not license_file:
             print("e LICENSE file not found!")
             return False
-        else:
-            self.license_file = license_file
+
+        self.license_file = license_file
         print("d Verify: LICENSE file found")
         return True
 
@@ -440,7 +438,9 @@ class PackageCreator(CreatorCommon):
             print("e Plugin sources not found!")
             return False
 
-        self.findLicenseFile(directory)
+        if not self.findLicenseFile(directory):
+            print("e License not found!")
+            return False
 
         # Plugin data
         self.loadPluginMeta(self.plugin_location)
@@ -653,8 +653,9 @@ class PluginCreator(CreatorCommon):
         self.loadPluginMeta(directory)
         print("d Verify: Loaded plugin metadata")
 
-        # .. and there must me a LICENSE file
-        self.findLicenseFile(directory)
+        if not self.findLicenseFile(directory):
+            print("e License not found!")
+            return False
 
         # Checking whether all keywords are given in the metadata
         for keyword in essential_plugin_fields:

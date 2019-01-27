@@ -149,14 +149,14 @@ class CreatorCommon():
 
     def isPackageMeta(self, location = None):
         if not location:
-            location = os.path.join(self.source_dir, package_metadata_filename)
+            location = os.path.join(self.source_dir)
         if os.path.isdir(location):
             location = os.path.join(location, package_metadata_filename)
         return os.path.isfile(location)
 
     def loadPackageMeta(self, location = None):
         if not location:
-            location = os.path.join(self.source_dir, package_metadata_filename)
+            location = os.path.join(self.source_dir)
         if os.path.isdir(location):
             location = os.path.join(location, package_metadata_filename)
         self.package_meta = self.loadJsonFile(location)
@@ -164,18 +164,41 @@ class CreatorCommon():
 
     def isPluginMeta(self, location = None):
         if not location:
-            location = os.path.join(self.source_dir, plugin_metadata_filename)
+            location = os.path.join(self.source_dir)
         if os.path.isdir(location):
             location = os.path.join(location, plugin_metadata_filename)
         return os.path.isfile(location)
 
     def loadPluginMeta(self, location = None):
         if not location:
-            location = os.path.join(self.source_dir, plugin_metadata_filename)
+            location = os.path.join(self.source_dir)
         if os.path.isdir(location):
             location = os.path.join(location, plugin_metadata_filename)
         self.plugin_meta = self.loadJsonFile(location)
         return self.plugin_meta
+
+    def findLicenseFile(self, directory):
+        result = False
+        license_locations = [self.package_location, self.plugin_location]
+        if directory not in license_locations:
+            license_locations.append(directory)
+        for license_location in license_locations:
+            found_at_location = False
+            for license_file in license_filenames:
+                license_file = os.path.join(license_location, license_file)
+                if os.path.isfile(license_file):
+                    found_at_location = True
+                    break
+            if found_at_location:
+                result = True
+                break
+        if not result:
+            print("e LICENSE file not found!")
+            return False
+        else:
+            self.license_file = license_file
+        print("d Verify: LICENSE file found")
+        return True
 
     def cleanUpBuildDirectory(self, build_path):
         if os.path.isdir(build_path):
@@ -353,11 +376,11 @@ class PackageCreator(CreatorCommon):
 
     def __init__(self, args):
         super().__init__(args)
+        self.package_location = self.source_dir
+        self.plugin_location = None
 
         # Load package metadata
         self.loadPackageMeta()
-        self.package_location = self.source_dir
-        self.plugin_location = None
 
     def verify(self):
         # Source validation check
@@ -432,29 +455,6 @@ class PackageCreator(CreatorCommon):
         if not ".".join([str(enum) for enum in self.target_sdk]) in self.plugin_meta["supported_sdk_versions"]:
             return False
 
-        return True
-
-    def findLicenseFile(self, directory):
-        result = False
-        license_locations = [self.package_location, self.plugin_location]
-        if directory not in license_locations:
-            license_locations.append(directory)
-        for license_location in license_locations:
-            found_at_location = False
-            for license_file in license_filenames:
-                license_file = os.path.join(license_location, license_file)
-                if os.path.isfile(license_file):
-                    found_at_location = True
-                    break
-            if found_at_location:
-                result = True
-                break
-        if not result:
-            print("e LICENSE file not found!")
-            return False
-        else:
-            self.license_file = license_file
-        print("d Verify: LICENSE file found")
         return True
 
     def verifyPluginMetadata(self):
@@ -579,21 +579,22 @@ class PluginCreator(CreatorCommon):
 
     def __init__(self, args):
         super().__init__(args)
+        self.plugin_location = self.source_dir
+        self.package_location = None
         self.license_file = None
 
         # (optionally) Load package metadata
         self.package_meta = None
-        self.package_location = None
         if self.isPackageMeta():
             self.loadPackageMeta()
-            self.package_location = self.source_dir
+            self.package_location = self.plugin_location
 
     def verify(self):
         # We might got pointed to an package source directory...
         if not self.checkValidSource() and self.package_meta:
             guessed_plugin_directory_in_package_source = os.path.join(self.source_dir, self.package_meta["package_id"])
             if self.checkValidSource(guessed_plugin_directory_in_package_source):
-                self.source_dir = guessed_plugin_directory_in_package_source
+                self.plugin_location = guessed_plugin_directory_in_package_source
 
         # Double-check..
         if not self.checkValidSource():
@@ -611,8 +612,8 @@ class PluginCreator(CreatorCommon):
 
     def build(self):
         # Build all files.. Compile and copy them..
-        self.compileAllPySources(self.source_dir, self.build_dir, args.variant, optimize = args.optimize)
-        self.copyOtherFiles(self.source_dir, self.build_dir)
+        self.compileAllPySources(self.plugin_location, self.build_dir, args.variant, optimize = args.optimize)
+        self.copyOtherFiles(self.plugin_location, self.build_dir)
         shutil.copy(self.license_file, self.build_dir)
         self.buildPluginMetadata(api = self.target_api)
 
@@ -653,26 +654,7 @@ class PluginCreator(CreatorCommon):
         print("d Verify: Loaded plugin metadata")
 
         # .. and there must me a LICENSE file
-        result = False
-        license_locations = [directory, ]
-        if self.package_location:
-            license_locations.append(self.package_location)
-        for license_location in license_locations:
-            found_at_location = False
-            for license_file in license_filenames:
-                license_file = os.path.join(license_location, license_file)
-                if os.path.isfile(license_file):
-                    found_at_location = True
-                    break
-            if found_at_location:
-                result = True
-                break
-        if not result:
-            print("e LICENSE file not found!")
-            return False
-        else:
-            self.license_file = license_file
-        print("d Verify: LICENSE file found")
+        self.findLicenseFile(directory)
 
         # Checking whether all keywords are given in the metadata
         for keyword in essential_plugin_fields:
@@ -727,7 +709,7 @@ class PluginCreator(CreatorCommon):
             return self._result_name
 
         if not self.result_extension:
-            plugin_extension = ["umplugin", "curaplugin"][self.checkSourceImports(self.source_dir) is "cura"]
+            plugin_extension = ["umplugin", "curaplugin"][self.checkSourceImports(self.plugin_location) is "cura"]
         else:
             plugin_extension = self.result_extension
 
@@ -827,8 +809,6 @@ class PluginSourceCreator(PluginSource5Creator):
 
     def __init__(self, args):
         super().__init__(args)
-        args.compression = "zlib"
-        args.variant = "source"
 
     def checkValidSource(self, directory = None):
         super().checkValidSource(directory)

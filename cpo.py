@@ -178,23 +178,23 @@ class CreatorCommon():
         return self.plugin_meta
 
     def findLicenseFile(self, directory):
-        license_file = None
+        result = None
         license_locations = [self.package_location, self.plugin_location]
         if directory not in license_locations:
             license_locations.append(directory)
         for license_location in license_locations:
-            for license_file in license_filenames:
-                _license_file = os.path.join(license_location, license_file)
-                if os.path.isfile(license_file):
-                    license_file = _license_file
+            for license_filename in license_filenames:
+                license_filepath = os.path.join(license_location, license_filename)
+                if os.path.isfile(license_filepath):
+                    result = license_filepath
                     break
-            if license_file:
+            if result:
                 break
-        if not license_file:
+        if not result:
             print("e LICENSE file not found!")
             return False
 
-        self.license_file = license_file
+        self.license_file = result
         print("d Verify: LICENSE file found")
         return True
 

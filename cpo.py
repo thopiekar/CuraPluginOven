@@ -195,7 +195,7 @@ class CreatorCommon():
             return False
 
         self.license_file = result
-        print("d Verify: LICENSE file found")
+        print("d Verify: LICENSE file found at: {}".format(result))
         return True
 
     def cleanUpBuildDirectory(self, build_path):

@@ -808,7 +808,7 @@ class PluginSource5Creator(Plugin5Creator):
         super().__init__(args)
         # The following values are known to work well with Ultimaker's contribut portal
         self.result_extension = "zip"
-        self.compression = "zlib"
+        self.compression = zipfile.ZIP_DEFLATED
         self.variant = "source"
 
 class PluginSourceCreator(PluginSource5Creator):

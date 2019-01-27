@@ -806,7 +806,7 @@ class PluginSource5Creator(Plugin5Creator):
 
     def __init__(self, args):
         super().__init__(args)
-        # The following values are known to work well with Ultimaker's contribut portal
+        # The following values are known to work well with Ultimaker's contributors portal
         self.result_extension = "zip"
         self.compression = zipfile.ZIP_DEFLATED
         self.variant = "source"

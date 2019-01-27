@@ -597,7 +597,7 @@ class PluginCreator(CreatorCommon):
                 self.plugin_location = guessed_plugin_directory_in_package_source
 
         # Double-check..
-        if not self.checkValidSource():
+        if not self.checkValidSource(self.plugin_location):
             print("e The provided source is not valid!")
             return False
 

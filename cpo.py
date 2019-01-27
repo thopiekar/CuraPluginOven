@@ -243,7 +243,6 @@ class CreatorCommon():
     def compileAllPySources(self, source, build, variant, optimize = -1):
         # zip_handle is zipfile handle
         for root, dirs, filenames in os.walk(source):
-            root = walked[0]
             for filename in filenames:
                 fullname = os.path.join(root, filename)
                 relative_filename = os.path.relpath(fullname, source)
@@ -546,10 +545,8 @@ class PackageCreator(CreatorCommon):
         zip_object.writestr("_rels/.rels", self.RELATION_BASE)
         zip_object.writestr("_rels/package.json.rels", self.RELATION_PLUGIN_BASE)
 
-        for walked in os.walk(build_dir):
-            root = walked[0]
-            files = walked[2]
-            for file in files:
+        for root, dirs, filenames in os.walk(build_dir):
+            for file in filenames:
                 filename = os.path.relpath(os.path.join(root, file), build_dir)
                 print("d Packaging: {}".format(filename))
                 filename_build = os.path.join(build_dir, filename)
@@ -688,9 +685,7 @@ class PluginCreator(CreatorCommon):
     def checkSourceImports(self, path):
         imports_cura = False
         imports_uranium = False
-        for walked in os.walk(path):
-            root = walked[0]
-            filenames = walked[2]
+        for root, dirs, filenames in os.walk(path):
             for filename in filenames:
                 print("d Checking imports in file: {}".format(filename))
                 filename = os.path.join(root, filename)
@@ -741,10 +736,8 @@ class PluginCreator(CreatorCommon):
         subdirectory = zipfile.ZipInfo(self.plugin_meta["id"] + "/")
         zip_object.writestr(subdirectory, "", compress_type = zipfile.ZIP_STORED) #Writing an empty string creates the directory.
 
-        for walked in os.walk(build_dir):
-            root = walked[0]
-            files = walked[2]
-            for file in files:
+        for root, dirs, filenames in os.walk(build_dir):
+            for file in filenames:
                 filename = os.path.relpath(os.path.join(root, file), build_dir)
                 print("d Packaging: {}".format(filename))
                 zip_object.write(os.path.join(build_dir, filename),

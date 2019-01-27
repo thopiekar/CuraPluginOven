@@ -37,7 +37,7 @@ package-6.0.0-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$SDK600 --source=./source
+  - python3 ../cpo.py --create=$SDK600 --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
@@ -53,7 +53,7 @@ plugin-5-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$API5 --source=$URL
+  - python3 ../cpo.py --create=$API5 --source=$URL --result=$TESTFILE
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
@@ -69,7 +69,7 @@ plugin-5-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$API5 --source=./source
+  - python3 ../cpo.py --create=$API5 --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
@@ -85,7 +85,7 @@ source-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$SOURCE --source=$URL
+  - python3 ../cpo.py --create=$SOURCE --source=$URL --result=$TESTFILE
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
@@ -101,7 +101,7 @@ source-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$SOURCE --source=./source
+  - python3 ../cpo.py --create=$SOURCE --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
@@ -117,7 +117,7 @@ all-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$ALL --source=$URL
+  - python3 ../cpo.py --create=$ALL --source=$URL --result=$TESTFILE
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
@@ -133,7 +133,7 @@ all-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$ALL --source=./source
+  - python3 ../cpo.py --create=$ALL --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:

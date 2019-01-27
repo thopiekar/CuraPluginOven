@@ -536,13 +536,6 @@ class PackageCreator(CreatorCommon):
         zip_object = zipfile.ZipFile(archive_file, "w",
                                      compression = self.compression)
 
-        #SDK6: subdirectory = zipfile.ZipInfo("_/")
-        #SDK6: zip_object.writestr(subdirectory, "", compress_type = zipfile.ZIP_STORED) #Writing an empty string creates the directory.
-
-        #SDK6: zip_object.writestr("_/[Content_Types].xml", self.CONTENT_TYPES)
-        #SDK6: zip_object.writestr("_/_rels/.rels", self.RELATION_BASE)
-        #SDK6: zip_object.writestr("_/_rels/package.json.rels", self.RELATION_PLUGIN_BASE)
-
         zip_object.writestr("[Content_Types].xml", self.CONTENT_TYPES)
         zip_object.writestr("_rels/.rels", self.RELATION_BASE)
         zip_object.writestr("_rels/package.json.rels", self.RELATION_PLUGIN_BASE)

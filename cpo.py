@@ -834,7 +834,9 @@ class PluginSourceCreator(PluginSource5Creator):
         super().checkValidSource(directory)
         if self.target_sdk:
             # Checking whether the targetted SDK version is supported.
-            PackageCreator.checkValidPluginMetadata(self)
+            if not PackageCreator.checkValidPluginMetadata(self):
+                return False
+        return True
 
 class PluginSource600Creator(PluginSourceCreator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."

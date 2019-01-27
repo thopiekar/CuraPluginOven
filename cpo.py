@@ -703,7 +703,7 @@ class PluginCreator(CreatorCommon):
             raise ValueError("This is impossible! You need to import Uranium at least!")
 
     @property
-    def result_extension:
+    def result_extension(self):
         return ["umplugin", "curaplugin"][self.checkSourceImports(self.plugin_location) is "cura"]
 
     @property

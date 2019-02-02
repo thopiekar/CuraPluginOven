@@ -340,18 +340,14 @@ class CreatorCommon():
 
         if self.target_sdk:
             if type(self.target_sdk) in (tuple, list):
-                metadata["sdk_version"] = ".".join([str(x) for x in self.target_sdk])
+                metadata["sdk_version"] = self.target_sdk[0]
             elif type(self.target_sdk) is int:
                 metadata["sdk_version"] = self.target_sdk
             else:
                 raise ValueError("Wrong data type of target_sdk!")
 
         # Filtering out some old keywords
-        if type(metadata["sdk_version"]) is int:
-            sdk_major = metadata["sdk_version"]
-        else:
-            sdk_major = metadata["sdk_version"][0]
-        if "tags" in metadata.keys() and sdk_major >= 6:
+        if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:
             del metadata["tags"]
 
         with open(location, "w") as metadata_file:

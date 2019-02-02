@@ -539,7 +539,13 @@ class PackageCreator(CreatorCommon):
         else:
             result_extension = self.default_result_extension
 
-        sdk_tag = "sdk-" + "".join([str(x) for x in self.target_sdk])
+        if type(self.target_sdk) in (tuple, list):
+            sdk_tag = "sdk-" + "".join([str(x) for x in self.target_sdk])
+        elif type(self.target_sdk) is int:
+            sdk_tag = "sdk-{}".format(self.target_sdk)
+        else:
+            raise ValueError("Wrong data type of target_sdk!")
+
         plugin_file = "{}-{}.{}.{}".format(self.plugin_meta["id"],
                                            self.plugin_meta["version"],
                                            sdk_tag,

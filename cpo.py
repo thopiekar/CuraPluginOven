@@ -830,9 +830,13 @@ class Plugin4Creator(PluginCreator):
     supported_formats = ["plugin4"]
 
 class PluginSource4Creator(Plugin4Creator):
+    default_result_extension = "zip"
+
     def __init__(self, args):
         super().__init__(args)
-        self.compression = "zlib"
+        # The following values are known to work well with Ultimaker's contributors portal
+        self.result_extension = "zip"
+        self.compression = zipfile.ZIP_DEFLATED
         self.variant = "source"
 
 class PluginSourceCreator(PluginSource4Creator):

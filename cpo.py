@@ -346,6 +346,10 @@ class CreatorCommon():
             else:
                 raise ValueError("Wrong data type of target_sdk!")
 
+        # Remove sdk_version_semver from older packages
+        if metadata["sdk_version"] <= 5 and "sdk_version_semver" in metadata.keys():
+            del metadata["sdk_version_semver"]
+
         # Filtering out some old keywords
         if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:
             del metadata["tags"]

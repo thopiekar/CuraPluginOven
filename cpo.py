@@ -99,6 +99,7 @@ def getSource(location):
 
 class CreatorCommon():
     default_result_extension = ""
+    target_sdk = None
 
     def __init__(self, args):
         self.__args = args
@@ -336,6 +337,14 @@ class CreatorCommon():
         if os.path.isdir(location):
             location = os.path.join(location, package_metadata_filename)
         metadata = self.package_meta.copy()
+
+        if self.target_sdk:
+            if type(self.target_sdk) in (tuple, list):
+                metadata["sdk_version"] = ".".join([str(x) for x in self.target_sdk])
+            elif type(self.target_sdk) is int:
+                metadata["sdk_version"] = self.target_sdk
+            else:
+                raise ValueError("Wrong data type of target_sdk!")
 
         # Filtering out some old keywords
         if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:

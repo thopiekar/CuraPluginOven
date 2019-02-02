@@ -2,6 +2,7 @@ stages:
   - package-6.0.0
   - package-5
   - package-4
+  - plugin-4
   - source
   - all
 
@@ -96,6 +97,38 @@ package-4-git:
 
 package-4-source:
   stage: package-4
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - git clone $URL ./source --recurse-submodules
+  - python3 ../cpo.py --create=$PACKAGE4 --source=./source --result=$TESTFILE
+  - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
+
+plugin-4-git:
+  stage: plugin-4
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - python3 ../cpo.py --create=$PACKAGE4 --source=$URL --result=$TESTFILE
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
+
+plugin-4-source:
+  stage: plugin-4
   tags:
   - os:ubuntu,
   - package:python3

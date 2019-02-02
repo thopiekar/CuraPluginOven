@@ -522,7 +522,12 @@ class PackageCreator(CreatorCommon):
 
     def build(self):
         # Build all files.. Compile and copy them..
-        _build_base = os.path.join(self.build_dir, "files", "plugins", self.package_meta["package_id"])
+        _build_base = self.build_dir
+        if type(self.target_sdk) is int:
+            if self.target_sdk <= 4:
+                # A bug(?) which was included in early packages in Cura.
+                _build_base = os.path.join(_build_base, "_")
+        _build_base = os.path.join(_build_base, "files", "plugins", self.package_meta["package_id"])
         self.compileAllPySources(self.plugin_location, _build_base, self.variant, optimize = args.optimize)
         self.copyOtherFiles(self.plugin_location, _build_base)
         shutil.copy(self.license_file, _build_base)

@@ -386,6 +386,8 @@ class PackageCreator(CreatorCommon):
         self.loadPackageMeta()
 
     def verify(self):
+        super().verify()
+
         # Source validation check
         if not self.checkValidSource():
             print("e The provided source is not valid!")
@@ -600,6 +602,8 @@ class PluginCreator(CreatorCommon):
             self.package_location = self.plugin_location
 
     def verify(self):
+        super().verify()
+
         # We might got pointed to an package source directory...
         if not self.checkValidSource():
             if self.package_meta:

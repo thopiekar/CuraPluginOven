@@ -458,7 +458,19 @@ class PackageCreator(CreatorCommon):
 
     def checkValidPluginMetadata(self):
         # Checking whether target SDK version is within the list of supported SDKs
-        if not ".".join([str(enum) for enum in self.target_sdk]) in self.plugin_meta["supported_sdk_versions"]:
+        if type(self.target_sdk) in (tuple, list):
+            if not ".".join([str(enum) for enum in self.target_sdk]) in self.plugin_meta["supported_sdk_versions"]:
+                return False
+        elif type(self.target_sdk) is int:
+            if "minimum_api" in self.plugin_meta.keys():
+                minimum_api = self.plugin_meta["minimum_api"]
+            else:
+                minimum_api = self.plugin_meta["api"]
+            plugin_api_range = range(minimum_api, self.plugin_meta["api"] + 1)
+            if not self.target_sdk in plugin_api_range:
+                return False
+        else:
+            print("e Wrong datatype for target_sdk!")
             return False
 
         return True

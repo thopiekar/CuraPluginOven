@@ -99,7 +99,8 @@ def getSource(location):
 
 class CreatorCommon():
     default_result_extension = ""
-    target_sdk = None
+    target_sdk = None # as declared in the package metadata
+    target_api = None # as declared in the plugin metadata
 
     def __init__(self, args):
         self.__args = args
@@ -318,6 +319,8 @@ class CreatorCommon():
 
         metadata = self.plugin_meta.copy()
         if api:
+            metadata["api"] = self.target_api
+        elif self.target_api:
             metadata["api"] = self.target_api
 
         # Filtering out some custom keywords
@@ -822,25 +825,24 @@ class Package6Creator(PackageCreator):
 
     supported_formats = ["package6"]
     target_sdk = (6, 0, 0)
-    default_result_extension = "curapackage"
 
 class Package5Creator(PackageCreator):
     "Creates package files based on package info (package.json)"
 
     supported_formats = ["package5"]
+    target_api = 5
     target_sdk = 5
-    default_result_extension = "curapackage"
 
 class Package4Creator(PackageCreator):
     "Creates package files based on package info (package.json)"
 
     supported_formats = ["package4"]
+    target_api = 4
     target_sdk = 4
-    default_result_extension = "curapackage"
 
 class Plugin4Creator(PluginCreator):
-    target_api = 4
     supported_formats = ["plugin4"]
+    target_api = 4
 
 class PluginSource4Creator(Plugin4Creator):
     default_result_extension = "zip"

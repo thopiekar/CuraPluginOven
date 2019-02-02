@@ -823,10 +823,6 @@ class Plugin4Creator(PluginCreator):
     target_api = 4
     supported_formats = ["plugin4"]
 
-class Plugin5Creator(PluginCreator):
-    target_api = 5
-    supported_formats = ["plugin5"]
-
 class PluginSource4Creator(Plugin4Creator):
     def __init__(self, args):
         super().__init__(args)

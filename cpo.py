@@ -347,7 +347,11 @@ class CreatorCommon():
                 raise ValueError("Wrong data type of target_sdk!")
 
         # Filtering out some old keywords
-        if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:
+        if type(metadata["sdk_version"]) is int:
+            sdk_major = metadata["sdk_version"]
+        else:
+            sdk_major = metadata["sdk_version"][0]
+        if "tags" in metadata.keys() and sdk_major >= 6:
             del metadata["tags"]
 
         with open(location, "w") as metadata_file:

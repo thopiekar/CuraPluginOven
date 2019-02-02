@@ -351,8 +351,7 @@ class CreatorCommon():
 class PackageCreator(CreatorCommon):
     "Creates package files based on package info (package.json)"
 
-    supported_formats = ["package6"]
-    target_sdk = (6, 0, 0)
+    target_sdk = 0
     default_result_extension = "curapackage"
 
     CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8"?>
@@ -795,6 +794,27 @@ class PluginCreator(CreatorCommon):
         print("i Built plugin file is valid!")
         return True
 
+class Package6Creator(PackageCreator):
+    "Creates package files based on package info (package.json)"
+
+    supported_formats = ["package6"]
+    target_sdk = (6, 0, 0)
+    default_result_extension = "curapackage"
+
+class Package5Creator(PackageCreator):
+    "Creates package files based on package info (package.json)"
+
+    supported_formats = ["package5"]
+    target_sdk = 5
+    default_result_extension = "curapackage"
+
+class Package4Creator(PackageCreator):
+    "Creates package files based on package info (package.json)"
+
+    supported_formats = ["package4"]
+    target_sdk = 4
+    default_result_extension = "curapackage"
+
 class Plugin4Creator(PluginCreator):
     target_api = 4
     supported_formats = ["plugin4"]
@@ -842,7 +862,7 @@ class PluginSource600Creator(PluginSourceCreator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
     target_sdk = (6, 0, 0)
 
-creators = (PackageCreator, Plugin5Creator, Plugin4Creator, PluginSourceCreator)
+creators = (Package6Creator, Package5Creator, Package4Creator, Plugin4Creator, PluginSourceCreator)
 default_format = creators[0].supported_formats[0]
 supported_formats = []
 for creator in creators:

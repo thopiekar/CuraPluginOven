@@ -1,14 +1,16 @@
 stages:
   - package-6.0.0
-  - plugin-5
+  - package-5
+  - package-4
   - source
   - all
 
 variables:
     URL: "https://thopiekar.eu:5443/cura-cad-integration/CuraBlenderPlugin.git"
     TESTFILE: "test.file"
-    SDK600: "package6"
-    API5: "plugin5"
+    PACKAGE600: "package6"
+    PACKAGE5: "package5"
+    PACKAGE4: "package4"
     API4: "plugin4"
     SOURCE: "source"
     ALL: "all"
@@ -21,7 +23,7 @@ package-6.0.0-git:
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$SDK600 --source=$URL --result=$TESTFILE
+  - python3 ../cpo.py --create=$PACKAGE600 --source=$URL --result=$TESTFILE
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
@@ -37,7 +39,7 @@ package-6.0.0-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$SDK600 --source=./source --result=$TESTFILE
+  - python3 ../cpo.py --create=$PACKAGE600 --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
@@ -45,23 +47,23 @@ package-6.0.0-source:
     - branches
     - tags
 
-plugin-5-git:
-  stage: plugin-5
+package-5-git:
+  stage: package-5
   tags:
   - os:ubuntu,
   - package:python3
   - type:shell
   script:
   - cd tests
-  - python3 ../cpo.py --create=$API5 --source=$URL --result=$TESTFILE
+  - python3 ../cpo.py --create=$PACKAGE5 --source=$URL --result=$TESTFILE
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:
     - triggers
     - branches
     - tags
 
-plugin-5-source:
-  stage: plugin-5
+package-5-source:
+  stage: package-5
   tags:
   - os:ubuntu,
   - package:python3
@@ -69,7 +71,39 @@ plugin-5-source:
   script:
   - cd tests
   - git clone $URL ./source --recurse-submodules
-  - python3 ../cpo.py --create=$API5 --source=./source --result=$TESTFILE
+  - python3 ../cpo.py --create=$PACKAGE5 --source=./source --result=$TESTFILE
+  - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
+
+package-4-git:
+  stage: package-4
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - python3 ../cpo.py --create=$PACKAGE4 --source=$URL --result=$TESTFILE
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
+
+package-4-source:
+  stage: package-4
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - git clone $URL ./source --recurse-submodules
+  - python3 ../cpo.py --create=$PACKAGE4 --source=./source --result=$TESTFILE
   - rm -rf ./source
   - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
   only:

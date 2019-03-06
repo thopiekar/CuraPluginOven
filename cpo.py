@@ -859,7 +859,21 @@ class PluginSource4Creator(Plugin4Creator):
         self.compression = zipfile.ZIP_DEFLATED
         self.variant = "source"
 
-class PluginSourceCreator(PluginSource4Creator):
+class Plugin5Creator(PluginCreator):
+    supported_formats = ["plugin5"]
+    target_api = 5
+
+class PluginSource5Creator(Plugin5Creator):
+    default_result_extension = "zip"
+
+    def __init__(self, args):
+        super().__init__(args)
+        # The following values are known to work well with Ultimaker's contributors portal
+        self.result_extension = "zip"
+        self.compression = zipfile.ZIP_DEFLATED
+        self.variant = "source"
+
+class PluginSourceCreator(PluginSource5Creator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
     target_sdk = None
     supported_formats = ["source"]

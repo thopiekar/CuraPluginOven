@@ -825,10 +825,16 @@ class PluginCreator(CreatorCommon):
         print("i Built plugin file is valid!")
         return True
 
-class Package6Creator(PackageCreator):
+class Package610Creator(PackageCreator):
     "Creates package files based on package info (package.json)"
 
-    supported_formats = ["package6"]
+    supported_formats = ["package610"]
+    target_sdk = (6, 1, 0)
+
+class Package600Creator(PackageCreator):
+    "Creates package files based on package info (package.json)"
+
+    supported_formats = ["package600"]
     target_sdk = (6, 0, 0)
 
 class Package5Creator(PackageCreator):
@@ -896,7 +902,7 @@ class PluginSource600Creator(PluginSourceCreator):
     "Creates a source archive, which can be uploaded to Ultimaker's contributors portal. This one is a plugin without any package info."
     target_sdk = (6, 0, 0)
 
-creators = (Package6Creator, Package5Creator, Package4Creator, Plugin4Creator, PluginSourceCreator)
+creators = (Package610Creator, Package600Creator, Package5Creator, Package4Creator, Plugin4Creator, PluginSourceCreator)
 default_format = creators[0].supported_formats[0]
 supported_formats = []
 for creator in creators:

@@ -354,7 +354,7 @@ class CreatorCommon():
             del metadata["sdk_version_semver"]
         
         if "sdk_version_semver" in metadata.keys() and type(self.target_sdk) in (tuple, list):
-            _sdk_version_semver = ".".join(self.target_sdk)
+            _sdk_version_semver = ".".join([str(target_sdk) for target_sdk in self.target_sdk])
             if _sdk_version_semver in self.plugin_meta["supported_sdk_versions"]:
                 metadata["sdk_version_semver"] = _sdk_version_semver
 

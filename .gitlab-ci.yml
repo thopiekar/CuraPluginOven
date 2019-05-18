@@ -9,12 +9,45 @@ stages:
 variables:
     URL: "https://thopiekar.eu:5443/cura-cad-integration/CuraBlenderPlugin.git"
     TESTFILE: "test.file"
-    PACKAGE600: "package6"
+    PACKAGE610: "package610"
+    PACKAGE600: "package600"
     PACKAGE5: "package5"
     PACKAGE4: "package4"
     API4: "plugin4"
     SOURCE: "source"
     ALL: "all"
+
+package-6.1.0-git:
+  stage: package-6.1.0
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - python3 ../cpo.py --create=$PACKAGE610 --source=$URL --result=$TESTFILE
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
+
+package-6.1.0-source:
+  stage: package-6.1.0
+  tags:
+  - os:ubuntu,
+  - package:python3
+  - type:shell
+  script:
+  - cd tests
+  - git clone $URL ./source --recurse-submodules
+  - python3 ../cpo.py --create=$PACKAGE610 --source=./source --result=$TESTFILE
+  - rm -rf ./source
+  - if [[ ! -f $TESTFILE ]] ; then exit 1 ; fi
+  only:
+    - triggers
+    - branches
+    - tags
 
 package-6.0.0-git:
   stage: package-6.0.0

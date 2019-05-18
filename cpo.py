@@ -352,6 +352,11 @@ class CreatorCommon():
         # Remove sdk_version_semver from older packages
         if metadata["sdk_version"] <= 5 and "sdk_version_semver" in metadata.keys():
             del metadata["sdk_version_semver"]
+        
+        if "sdk_version_semver" in metadata.keys() and type(self.target_sdk) in (tuple, list):
+            _sdk_version_semver = ".".join(self.target_sdk)
+            if _sdk_version_semver in self.plugin_meta["supported_sdk_versions"]:
+                metadata["sdk_version_semver"] = _sdk_version_semver
 
         # Filtering out some old keywords
         if "tags" in metadata.keys() and metadata["sdk_version"] >= 6:

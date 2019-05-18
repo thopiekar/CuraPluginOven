@@ -1,4 +1,5 @@
 stages:
+  - package-6.1.0
   - package-6.0.0
   - package-5
   - package-4
